@@ -23,7 +23,7 @@ st.markdown('<p class="glow-header-2">Product Industrialization & Quality Assura
 st.markdown("<hr>", unsafe_allowed_html=True)
 
 # ----------------------------------------------------
-# 📊 EMBEDDED FACTORY PRODUCTION DATABASE
+# 📊 EXACT PRODUCTION MATERIAL DATABASE INSERTION
 # ----------------------------------------------------
 sizes = [
     "1200-20 NB-72 18PR", "1200-20 AT-20 18PR", "1100-20 HT-90 16/18PR",
@@ -31,7 +31,7 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Exact extracted raw materials, baseline consumptions, beginning balances, and WIP metrics
+# Extracted directly from your factory planning dataset sheet values
 factory_inventory = [
     {"material": "SMR-20 (SIR /SMR-20)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
     {"material": "BEBEKA RUBBER (SMR-20)", "daily_base": 13.11, "beg": 340, "wip": 50},
@@ -46,7 +46,7 @@ factory_inventory = [
 ]
 
 # ----------------------------------------------------
-# 🎛️ OPERATIONAL INTERACTIVE DASHBOARD CONTROLS
+# 🎛️ OPERATIONAL DASHBOARD CONTROLS
 # ----------------------------------------------------
 col1, col2 = st.columns(2)
 
@@ -58,22 +58,17 @@ with col2:
     beg_modifier = st.slider("Warehouse Beginning Stock Tuning Multiplier", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
     wip_modifier = st.slider("Work-In-Process (WIP) Multiplier Factor", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
 
-# Summary Processing Metrics
+# Dynamic Target Calculations
 monthly_target = daily_target * 30
 processed_rows = []
 active_alarms = 0
 
 for item in factory_inventory:
-    # 1. Available Inventory = (Beginning Balance * Modifier) + (WIP * Modifier)
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
-    
-    # 2. Dynamic Scale Consumption relative to 450 Base Target
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
-    
-    # 3. Target Horizon Days Coverage Formula
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
-    # Compute Awakening Alarm Matrix Tiers
+    # Evaluate multi-horizon awakening points
     alarm_15 = "🚨 ALARM" if running_days <= 15 else "✅ OK"
     alarm_30 = "🚨 ALARM" if running_days <= 30 else "✅ OK"
     alarm_60 = "🚨 ALARM" if running_days <= 60 else "✅ OK"
@@ -98,7 +93,7 @@ for item in factory_inventory:
 df_display = pd.DataFrame(processed_rows)
 
 # ----------------------------------------------------
-# 📈 RENDER SYSTEM MONITORING TABLES
+# 📈 VIEW OUTPUT MATRICES
 # ----------------------------------------------------
 st.markdown("### Factory Summary KPI Blocks")
 m_col1, m_col2, m_col3, m_col4 = st.columns(4)
@@ -117,4 +112,4 @@ st.data_editor(
     hide_index=True
 )
 
-st.success("🔒 System running in embedded storage mode. External file dependencies bypassed successfully.")
+st.success("🔒 System running smoothly. Core material rows loaded successfully.")
