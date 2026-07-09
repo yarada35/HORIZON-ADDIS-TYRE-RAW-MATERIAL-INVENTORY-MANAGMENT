@@ -37,7 +37,7 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Injected with exact balances and consumption criteria from your sheets
+# Real factory parameters from your 2012 Business Plan logs
 factory_inventory = [
     {"material": "SMR-20 (SIR/SMR)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
     {"material": "BEBEKA RUBBER", "daily_base": 13.11, "beg": 340, "wip": 50},
@@ -71,12 +71,12 @@ processed_rows = []
 active_alarms = 0
 
 for item in factory_inventory:
-    # Use exact keys mapped precisely to variables
+    # Calculate live inventory levels by multiplying inputs safely
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
-    # Format text indicators with classes to protect against Opera compression
+    # Format high contrast inline alerts
     a15 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 15 else "<span class='ok-glow'>OK</span>"
     a30 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 30 else "<span class='ok-glow'>OK</span>"
     a60 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 60 else "<span class='ok-glow'>OK</span>"
@@ -106,7 +106,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allowed_html=True)
 
-# Generate and pass table
+# Generate and pass clean HTML table
 html_table = df_display.to_html(classes="mobile-mrp-table", escape=False, index=False)
 st.markdown(html_table, unsafe_allowed_html=True)
 
