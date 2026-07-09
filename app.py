@@ -23,7 +23,7 @@ st.markdown('<p class="glow-header-2">Product Industrialization & Quality Assura
 st.markdown("<hr>", unsafe_allowed_html=True)
 
 # ----------------------------------------------------
-# 📊 EMBEDDED FACTORY PRODUCTION DATABASE (From Sheet1)
+# 📊 EMBEDDED MASTER FACILITY DATA
 # ----------------------------------------------------
 sizes = [
     "1200-20 NB-72 18PR", "1200-20 AT-20 18PR", "1100-20 HT-90 16/18PR",
@@ -31,7 +31,7 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Real data extracted directly from your master Planning sheet balances
+# Fully parsed raw material list from your master Planning Days data sheet
 factory_inventory = [
     {"material": "SMR-20 (SIR /SMR-20)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
     {"material": "BEBEKA RUBBER (SMR-20)", "daily_base": 13.11, "beg": 340, "wip": 50},
@@ -43,8 +43,8 @@ factory_inventory = [
     {"material": "WHOLE TYRE RECLAIM RUBBER (Reclaim RSTN)", "daily_base": 187.38, "beg": 4871, "wip": 900},
     {"material": "ECCOR RBR 70", "daily_base": 2.53, "beg": 65, "wip": 15},
     {"material": "N-220 / ISAF", "daily_base": 480.04, "beg": 15400, "wip": 3000},
-    {"material": "LN-4540", "daily_base": 136.81, "beg": 12000, "wip": 1800},
-    {"material": "LN-2530", "daily_base": 92.37, "beg": 8500, "wip": 1200}
+    {"material": "LN-4540", "daily_base": 136.81, "beg": 42683, "wip": 3556},
+    {"material": "LN-2530", "daily_base": 92.37, "beg": 28820, "wip": 2401}
 ]
 
 # ----------------------------------------------------
@@ -60,7 +60,7 @@ with col2:
     beg_modifier = st.slider("Warehouse Beginning Stock Tuning Multiplier", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
     wip_modifier = st.slider("Work-In-Process (WIP) Multiplier Factor", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
 
-# Dynamic Target Calculations
+# Dynamic Calculations
 monthly_target = daily_target * 30
 processed_rows = []
 active_alarms = 0
@@ -68,6 +68,7 @@ active_alarms = 0
 for item in factory_inventory:
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
+    
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
     # Evaluate multi-horizon awakening points
@@ -106,7 +107,7 @@ m_col4.metric("Monitored Compounds", f"{len(processed_rows)} Types")
 
 st.markdown("### Master Dynamic Material Control & Horizon Awakening Matrix")
 
-# Locked data editor layout to protect supervisors from manual cell modifications
+# Render table with the fixed key maps
 st.data_editor(
     df_display,
     use_container_width=True,
@@ -114,4 +115,4 @@ st.data_editor(
     hide_index=True
 )
 
-st.success("🔒 System running smoothly. Core material rows loaded successfully.")
+st.success("🔒 System running smoothly. Material data structures fully bound to layout.")
