@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Mobile phone specific CSS layout overrides to handle compression
+# Mobile phone specific CSS layout overrides to handle extreme data saving compression
 st.markdown("""
     <style>
     .glow-header-1 { color: #fff200; font-size: 1.4rem; font-weight: bold; text-transform: uppercase; text-align: center; margin-bottom: 0px;}
@@ -19,8 +19,13 @@ st.markdown("""
     .mobile-mrp-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: sans-serif; color: #ffffff; }
     .mobile-mrp-table th { background-color: #fff200 !important; color: #000000 !important; padding: 6px 4px; font-weight: bold; text-align: left; }
     .mobile-mrp-table td { padding: 6px 4px; border-bottom: 1px solid #444444; background-color: #1e1e1e; }
-    .alarm-glow { color: #ff3333; font-weight: bold; }
-    .ok-glow { color: #00ff00; }
+    
+    /* Critical awakening priority colors */
+    .status-crit { color: #ff3333; font-weight: bold; } /* <= 15 Days */
+    .status-warn { color: #ff9900; font-weight: bold; } /* <= 30 Days */
+    .status-mid { color: #ffff00; font-weight: bold; }  /* <= 60 Days */
+    .status-safe { color: #00ff00; }                   /* <= 90 Days */
+    .status-abund { color: #00ffff; }                  /* > 90 Days */
     </style>
 """, unsafe_allow_html=True)
 
@@ -32,7 +37,6 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # 📊 RELATIONAL MATRIX: TYRE SIZE TO COMPOUND GROUP
 # ----------------------------------------------------
 size_to_compound_map = {
-    # Heavy & Light Commercial Bias / Truck (Mainly High Natural Rubber Tread/Sidewall Blends)
     "8.25-16 HT-40 16PR": "Heavy Truck Bias Compound",
     "8.25-16 HT-60 16PR": "Heavy Truck Bias Compound",
     "8.25-20 NB-32/27 14PR": "Heavy Truck Bias Compound",
@@ -54,14 +58,10 @@ size_to_compound_map = {
     "650-14 HT-60": "Light Truck Compound",
     "4.50-10 HT-60 8PR": "Small Utility Compound",
     "4.00-8 HT-60 6PR": "Small Utility Compound",
-    
-    # Small / Micro-Commercial Bias
     "560-15 AT100 4PR": "Small Utility Compound",
     "560-13 AT100 4PR": "Small Utility Compound",
     "600-12 AT100 4PR": "Small Utility Compound",
     "520/550-12 AT100 4PR": "Small Utility Compound",
-    
-    # Agricultural Series (HT-F-444 & Flotation - High SBR / Flexibility Blends)
     "18.4 HT F-444 14PR": "Agri F-444 Compound",
     "13.6-38 12/14PR TT": "Agri F-444 Compound",
     "12.4-24 8PR HT-F-444": "Agri F-444 Compound",
@@ -73,17 +73,11 @@ size_to_compound_map = {
     "18.4-38 HT F-444 14PR": "Agri F-444 Compound",
     "14.9-24 HTF 444-8PR": "Agri F-444 Compound",
     "14.9-28 HT F-444 12PR": "Agri F-444 Compound",
-    
-    # OTR / Heavy Duty Industrial
     "1400-24 G222 18PR": "OTR Industrial Compound",
     "1400-20 MT HT-888 18PR": "OTR Industrial Compound",
-    
-    # Industrial / Forklift Solid-Pneumatic (HT-I-222)
     "8.25-15 HT-I-222 16PR": "KIP Solid-Industrial Compound",
     "6.00-9 HT-I-222 12PR": "KIP Solid-Industrial Compound",
     "6.50-10 HT-I-222 12PR": "KIP Solid-Industrial Compound",
-    
-    # Passenger Car Radials (PCR / High SBR / BR / Carbon Black N220 matrices)
     "135/80 D12 HT 65": "Passenger Radial Compound",
     "7.50 R16C 120/110Q": "Passenger Radial Compound",
     "205 R16 110/108 MA 310": "Passenger Radial Compound",
@@ -93,8 +87,6 @@ size_to_compound_map = {
     "185/70 R13 86T MP 22": "Passenger Radial Compound",
     "175/70 R14 84T MP 11": "Passenger Radial Compound",
     "175/70 R13 82T MP 11": "Passenger Radial Compound",
-    
-    # Factory Internal Components & Cements
     "5763 BLADDER": "Bladder Curing Compound",
     "5765 BLADDER": "Bladder Curing Compound",
     "FLAPS": "Flap Liner Compound",
@@ -164,88 +156,86 @@ compound_recipes = {
     ]
 }
 
-# Base list of sizes for dropdown selector
-size_options = list(size_to_compound_map.keys())
+# Create core execution layout split tabs
+tab_controls, tab_runway = st.tabs(["🎛️ Control Panel Assignment", "📅 Material Runway Horizons"])
 
-# ----------------------------------------------------
-# 🎛️ CONTROL PANEL TABS SETUP
-# ----------------------------------------------------
-tab_selector, tab_recipe_view = st.tabs(["🎯 Product & Component Selector", "🧪 Active Compound Recipe"])
-
-with tab_selector:
-    st.markdown("### Production Assignment")
+with tab_controls:
+    st.markdown("### Operational Targeting Controls")
     
-    # Primary selector: Tyre Size Selection
-    selected_size = st.selectbox("Select Tyre Size Designation", options=size_options)
+    # Tier 1 Selectbox: Tire Size Selection
+    selected_size = st.selectbox("Assign Target Tyre Profile", options=list(size_to_compound_map.keys()))
     
-    # Back-and-Front Relationship Mapping
+    # Direct Auto-Relation Target Lookup
     inferred_compound = size_to_compound_map[selected_size]
-    
-    # Allow user to either accept inferred compound or override via dynamic dropdown list
     unique_compounds = list(set(size_to_compound_map.values()))
-    default_index = unique_compounds.index(inferred_compound)
     
+    # Tier 2 Dynamic Selection Link
     selected_compound = st.selectbox(
-        "Linked Compound Type Matrix (Auto-Swaps Ingredients Below)", 
-        options=unique_compounds, 
-        index=default_index
+        "Active Balanced Compound Type",
+        options=unique_compounds,
+        index=unique_compounds.index(inferred_compound)
     )
-
+    
     col1, col2, col3 = st.columns(3)
     with col1:
-        daily_target = st.number_input("Plan (Pcs/Units)", min_value=1, value=450, step=50)
+        daily_target = st.number_input("Plan Target (Pcs/Units)", min_value=1, value=450, step=50)
     with col2:
-        beg_modifier = st.slider("Stock Scale", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
+        beg_modifier = st.slider("Stock Scaling Multiplier", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
     with col3:
-        wip_modifier = st.slider("WIP Scale", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
+        wip_modifier = st.slider("WIP Scaling Multiplier", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
 
-# Retrieve current ingredient lines dynamically based on selection loop
-active_inventory = compound_recipes.get(selected_compound, compound_recipes["Heavy Truck Bias Compound"])
+# Core background loop logic execution
+active_ingredients = compound_recipes.get(selected_compound, compound_recipes["Heavy Truck Bias Compound"])
 
-processed_rows = []
-active_alarms = 0
+processed_data = []
+critical_awakening_count = 0
 
-for item in active_inventory:
+for item in active_ingredients:
+    # Compute active scaled mass figures
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
-    a15 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 15 else "<span class='ok-glow'>OK</span>"
-    a30 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 30 else "<span class='ok-glow'>OK</span>"
-    a60 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 60 else "<span class='ok-glow'>OK</span>"
-    
-    if running_days <= 30:
-        active_alarms += 1
-
-    processed_rows.append({
+    # Determine critical awakening window categorization profiles
+    if running_days <= 15:
+        horizon_group = "<span class='status-crit'>🚨 CRIT (≤15 Days)</span>"
+        critical_awakening_count += 1
+    elif running_days <= 30:
+        horizon_group = "<span class='status-warn'>⚠️ WARN (≤30 Days)</span>"
+        critical_awakening_count += 1
+    elif running_days <= 60:
+        horizon_group = "<span class='status-mid'>⏳ MID (2 Months)</span>"
+    elif running_days <= 90:
+        horizon_group = "<span class='status-safe'>✓ SAFE (90 Days)</span>"
+    elif running_days <= 150:
+        horizon_group = "<span class='status-abund'>✓ ABUND (150 Days)</span>"
+    else:
+        horizon_group = "<span class='status-abund'>✓ OVERSTOCK</span>"
+        
+    processed_data.append({
         "Material Ingredient": item["material"],
-        "Stock Available (Kg)": f"{round(total_stock):,}",
-        "Target Consumption (Kg)": f"{round(daily_consumption):,}",
-        "Run Time Safety": f"<b>{running_days} Days</b>",
-        "15D": a15,
-        "30D": a30,
-        "60D": a60
+        "Stock (Kg)": f"{round(total_stock):,}",
+        "Cons (Kg/Day)": f"{round(daily_consumption):,}",
+        "Stock Horizon Group": horizon_group,
+        "Run Time": f"<b>{running_days} Days</b>"
     })
 
-df_display = pd.DataFrame(processed_rows)
+df_display = pd.DataFrame(processed_data)
 
-with tab_recipe_view:
-    st.markdown(f"### Formula Audit: `{selected_compound}`")
-    st.json([item["material"] for item in active_inventory])
+# Render Content Out across the dedicated display tab panels
+with tab_runway:
+    st.markdown("### Material Depletion Warning System")
+    
+    # Mini Summary Metrics Widget
+    st.markdown(f"""
+    <div style='background-color:#1e1e1e; padding:8px; border-radius:4px; margin-bottom:12px; border-left:4px solid #ff0000;'>
+        <span style='color:#aaaaaa; font-size:11px;'>Active Formula Group:</span> <b style='color:#00d2ff; font-size:12px;'>{selected_compound}</b> | 
+        <span style='color:#aaaaaa; font-size:11px;'>Critical Awakenings (≤30D):</span> <b style='color:#ff3333; font-size:12px;'>{critical_awakening_count} Items</b>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Clear HTML structured matrix delivery
+    html_table = df_display.to_html(classes="mobile-mrp-table", escape=False, index=False)
+    st.markdown(html_table, unsafe_allow_html=True)
 
-# ----------------------------------------------------
-# 📈 RENDER SYSTEM DISPLAY TABLES
-# ----------------------------------------------------
-st.markdown(f"""
-<div style='background-color:#1e1e1e; padding:8px; border-radius:4px; margin-bottom:10px; border-left:4px solid #fff200;'>
-    <span style='color:#aaaaaa; font-size:11px;'>Selected Size:</span> <b style='color:#ffffff; font-size:12px;'>{selected_size}</b> | 
-    <span style='color:#aaaaaa; font-size:11px;'>Active Formula Matrix:</span> <b style='color:#00d2ff; font-size:12px;'>{selected_compound}</b> | 
-    <span style='color:#aaaaaa; font-size:11px;'>Critical Components:</span> <b style='color:#ff3333; font-size:12px;'>{active_alarms} Items</b>
-</div>
-""", unsafe_allow_html=True)
-
-# Generate and pass clean HTML table
-html_table = df_display.to_html(classes="mobile-mrp-table", escape=False, index=False)
-st.markdown(html_table, unsafe_allow_html=True)
-
-st.caption("🔒 Dynamic multi-tier mapping operational. Unsafe layout parameter bugs fully neutralized.")
+st.caption("🔒 Horizon Addis Material Runway Tracker connected dynamically.")
