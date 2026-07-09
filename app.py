@@ -8,14 +8,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Mobile phone specific CSS layout overrides
+# Mobile phone specific CSS layout overrides to handle compression
 st.markdown("""
     <style>
     .glow-header-1 { color: #fff200; font-size: 1.4rem; font-weight: bold; text-transform: uppercase; text-align: center; margin-bottom: 0px;}
     .glow-header-2 { color: #00d2ff; font-size: 0.9rem; text-transform: uppercase; text-align: center; margin-bottom: 10px;}
     hr { border: 1px solid #ff0000 !important; margin-top: 5px !important; margin-bottom: 10px !important; }
     
-    /* Force high contrast mobile styling for standard HTML tables */
+    /* High contrast mobile styling for raw HTML tables */
     .mobile-mrp-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: sans-serif; color: #ffffff; }
     .mobile-mrp-table th { background-color: #fff200 !important; color: #000000 !important; padding: 6px 4px; font-weight: bold; text-align: left; }
     .mobile-mrp-table td { padding: 6px 4px; border-bottom: 1px solid #444444; background-color: #1e1e1e; }
@@ -29,7 +29,7 @@ st.markdown('<p class="glow-header-2">Product Industrialization & QA — Mobile 
 st.markdown("<hr>", unsafe_allowed_html=True)
 
 # ----------------------------------------------------
-# 📊 MASTER PRODUCTION MATERIALS DATABASE
+# 📊 MASTER PRODUCTION MATERIALS DATABASE (EXACT BALANCES)
 # ----------------------------------------------------
 sizes = [
     "1200-20 NB-72 18PR", "1200-20 AT-20 18PR", "1100-20 HT-90 16/18PR",
@@ -37,6 +37,7 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
+# Injected with exact balances and consumption criteria from your sheets
 factory_inventory = [
     {"material": "SMR-20 (SIR/SMR)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
     {"material": "BEBEKA RUBBER", "daily_base": 13.11, "beg": 340, "wip": 50},
@@ -70,11 +71,12 @@ processed_rows = []
 active_alarms = 0
 
 for item in factory_inventory:
+    # Use exact keys mapped precisely to variables
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
-    # Format high visibility visual text indicators
+    # Format text indicators with classes to protect against Opera compression
     a15 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 15 else "<span class='ok-glow'>OK</span>"
     a30 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 30 else "<span class='ok-glow'>OK</span>"
     a60 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 60 else "<span class='ok-glow'>OK</span>"
@@ -104,7 +106,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allowed_html=True)
 
-# Convert Dataframe to plain HTML table to override Opera Mini compression bugs
+# Generate and pass table
 html_table = df_display.to_html(classes="mobile-mrp-table", escape=False, index=False)
 st.markdown(html_table, unsafe_allowed_html=True)
 
