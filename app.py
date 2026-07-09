@@ -31,7 +31,7 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Fully parsed raw material list from your master Planning Days data sheet
+# Fully parsed raw material list directly from your factory log data balances
 factory_inventory = [
     {"material": "SMR-20 (SIR /SMR-20)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
     {"material": "BEBEKA RUBBER (SMR-20)", "daily_base": 13.11, "beg": 340, "wip": 50},
@@ -65,6 +65,7 @@ monthly_target = daily_target * 30
 processed_rows = []
 active_alarms = 0
 
+# LOOP CORRECTION: Correctly matching the data array variable name
 for item in factory_inventory:
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
@@ -107,7 +108,7 @@ m_col4.metric("Monitored Compounds", f"{len(processed_rows)} Types")
 
 st.markdown("### Master Dynamic Material Control & Horizon Awakening Matrix")
 
-# Render table with the fixed key maps
+# Render table
 st.data_editor(
     df_display,
     use_container_width=True,
