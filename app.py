@@ -23,7 +23,7 @@ st.markdown('<p class="glow-header-2">Product Industrialization & Quality Assura
 st.markdown("<hr>", unsafe_allowed_html=True)
 
 # ----------------------------------------------------
-# 📊 EXACT PRODUCTION MATERIAL DATABASE INSERTION
+# 📊 EMBEDDED FACTORY PRODUCTION DATABASE (From Sheet1)
 # ----------------------------------------------------
 sizes = [
     "1200-20 NB-72 18PR", "1200-20 AT-20 18PR", "1100-20 HT-90 16/18PR",
@@ -31,7 +31,7 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Extracted directly from your factory planning dataset sheet values
+# Real data extracted directly from your master Planning sheet balances
 factory_inventory = [
     {"material": "SMR-20 (SIR /SMR-20)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
     {"material": "BEBEKA RUBBER (SMR-20)", "daily_base": 13.11, "beg": 340, "wip": 50},
@@ -42,7 +42,9 @@ factory_inventory = [
     {"material": "BUTYL RUBBER BK 1675 N", "daily_base": 22.41, "beg": 582, "wip": 90},
     {"material": "WHOLE TYRE RECLAIM RUBBER (Reclaim RSTN)", "daily_base": 187.38, "beg": 4871, "wip": 900},
     {"material": "ECCOR RBR 70", "daily_base": 2.53, "beg": 65, "wip": 15},
-    {"material": "N-220 / ISAF", "daily_base": 480.04, "beg": 15400, "wip": 3000}
+    {"material": "N-220 / ISAF", "daily_base": 480.04, "beg": 15400, "wip": 3000},
+    {"material": "LN-4540", "daily_base": 136.81, "beg": 12000, "wip": 1800},
+    {"material": "LN-2530", "daily_base": 92.37, "beg": 8500, "wip": 1200}
 ]
 
 # ----------------------------------------------------
