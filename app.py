@@ -15,6 +15,11 @@ st.markdown("""
     .glow-header-2 { color: #00d2ff; font-size: 1.1rem; text-transform: uppercase; text-shadow: 0 0 8px rgba(0, 210, 255, 0.3); text-align: center; margin-bottom: 15px;}
     hr { border: 1px solid #ff0000 !important; }
     div[data-testid="stMetricValue"] { color: #ffffff !important; font-family: monospace; }
+    
+    /* Mobile browser friendly fallback styling for base tables */
+    table { width: 100%; border-collapse: collapse; color: #ffffff; background-color: #1e1e1e; }
+    th { background-color: #fff200 !important; color: #000000 !important; font-weight: bold; padding: 8px; text-align: left; }
+    td { padding: 8px; border-bottom: 1px solid #333333; }
     </style>
 """, unsafe_allowed_html=True)
 
@@ -31,7 +36,7 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Fully parsed raw material list directly from your factory log data balances
+# Fully loaded list with precise beginning balances and WIP figures
 factory_inventory = [
     {"material": "SMR-20 (SIR /SMR-20)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
     {"material": "BEBEKA RUBBER (SMR-20)", "daily_base": 13.11, "beg": 340, "wip": 50},
@@ -65,14 +70,11 @@ monthly_target = daily_target * 30
 processed_rows = []
 active_alarms = 0
 
-# LOOP CORRECTION: Correctly matching the data array variable name
 for item in factory_inventory:
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
-    
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
-    # Evaluate multi-horizon awakening points
     alarm_15 = "🚨 ALARM" if running_days <= 15 else "✅ OK"
     alarm_30 = "🚨 ALARM" if running_days <= 30 else "✅ OK"
     alarm_60 = "🚨 ALARM" if running_days <= 60 else "✅ OK"
@@ -86,7 +88,7 @@ for item in factory_inventory:
         "Raw Material Type": item["material"],
         "Total Stock (Kg)": f"{round(total_stock):,}",
         "Daily Cons. (Kg)": f"{round(daily_consumption):,}",
-        "Running Coverage": f"{running_days} Days",
+        "Coverage": f"{running_days} Days",
         "15D Alert": alarm_15,
         "30D Alert": alarm_30,
         "60D Alert": alarm_60,
@@ -97,7 +99,7 @@ for item in factory_inventory:
 df_display = pd.DataFrame(processed_rows)
 
 # ----------------------------------------------------
-# 📈 VIEW OUTPUT MATRICES
+# 📈 RENDER OUTPUT VIEW WITH STATIC COMPATIBILITY
 # ----------------------------------------------------
 st.markdown("### Factory Summary KPI Blocks")
 m_col1, m_col2, m_col3, m_col4 = st.columns(4)
@@ -108,12 +110,7 @@ m_col4.metric("Monitored Compounds", f"{len(processed_rows)} Types")
 
 st.markdown("### Master Dynamic Material Control & Horizon Awakening Matrix")
 
-# Render table
-st.data_editor(
-    df_display,
-    use_container_width=True,
-    disabled=True,
-    hide_index=True
-)
+# FIX: Switched from st.data_editor to st.table for maximum mobile web browser display compatibility
+st.table(df_display)
 
-st.success("🔒 System running smoothly. Material data structures fully bound to layout.")
+st.success("🔒 Live calculation metrics active. Mobile layout stabilized.")
