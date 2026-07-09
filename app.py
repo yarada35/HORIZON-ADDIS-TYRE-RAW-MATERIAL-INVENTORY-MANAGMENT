@@ -22,11 +22,11 @@ st.markdown("""
     .alarm-glow { color: #ff3333; font-weight: bold; }
     .ok-glow { color: #00ff00; }
     </style>
-""", unsafe_allowed_html=True)
+""", unsafe_allow_html=True)
 
-st.markdown('<p class="glow-header-1">Horizon Addis Tyre S.C.</p>', unsafe_allowed_html=True)
-st.markdown('<p class="glow-header-2">Product Industrialization & QA — Mobile Board</p>', unsafe_allowed_html=True)
-st.markdown("<hr>", unsafe_allowed_html=True)
+st.markdown('<p class="glow-header-1">Horizon Addis Tyre S.C.</p>', unsafe_allow_html=True)
+st.markdown('<p class="glow-header-2">Product Industrialization & QA — Mobile Board</p>', unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
 # ----------------------------------------------------
 # 📊 MASTER PRODUCTION MATERIALS DATABASE (EXACT BALANCES)
@@ -37,7 +37,6 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Real factory parameters from your master planning log balances
 factory_inventory = [
     {"material": "SMR-20 (SIR/SMR)", "daily_base": 9083.55, "beg": 2834068.52, "wip": 236172.37},
     {"material": "BEBEKA RUBBER", "daily_base": 13.11, "beg": 4090.03, "wip": 340.83},
@@ -71,12 +70,10 @@ processed_rows = []
 active_alarms = 0
 
 for item in factory_inventory:
-    # Scale current total stock levels based on slider selections
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
-    # Format high contrast inline alerts for low-bandwidth mobile views
     a15 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 15 else "<span class='ok-glow'>OK</span>"
     a30 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 30 else "<span class='ok-glow'>OK</span>"
     a60 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 60 else "<span class='ok-glow'>OK</span>"
@@ -104,10 +101,10 @@ st.markdown(f"""
     <span style='color:#aaaaaa; font-size:11px;'>Plan Load:</span> <b style='color:#ffffff; font-size:13px;'>{daily_target} Pcs</b> | 
     <span style='color:#aaaaaa; font-size:11px;'>Alarms (≤30D):</span> <b style='color:#ff3333; font-size:13px;'>{active_alarms} Items</b>
 </div>
-""", unsafe_allowed_html=True)
+""", unsafe_allow_html=True)
 
-# Generate and pass clean HTML table to override layout compression bugs
+# Generate and pass clean HTML table
 html_table = df_display.to_html(classes="mobile-mrp-table", escape=False, index=False)
-st.markdown(html_table, unsafe_allowed_html=True)
+st.markdown(html_table, unsafe_allow_html=True)
 
 st.caption("🔒 Dynamic system linked. Bypassed high-overhead layout modules.")
