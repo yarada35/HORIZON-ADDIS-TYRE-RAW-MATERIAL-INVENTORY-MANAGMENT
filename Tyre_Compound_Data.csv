@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Horizon Addis Tyre - Complete Live Control & Awakening Engine</title>
+    <style>
+        :root {
+            --bg-matte-black: #121212;
+            --panel-bg: #1e1e1e;
+            --glow-yellow: #fff200;
+            --glow-blue: #00d2ff;
+            --glow-white: #ffffff;
+            --youtube-red: #ff0000;
+            --alert-green: #00ff66;
+            --alert-orange: #ff9900;
+            --border-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-matte-black);
+            color: var(--glow-white);
+            padding: 12px;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 5px;
+            border-bottom: 2px solid var(--youtube-red);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--glow-yellow);
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 242, 0, 0.5);
+        }
+
+        h2 {
+            color: var(--glow-blue);
+            font-size: 1rem;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .panel-title {
+            font-size: 0.95rem;
+            color: var(--glow-blue);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.78rem;
+            color: #b0b0b0;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        select, input {
+            width: 100%;
+            background-color: #141414;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--glow-yellow);
+            box-shadow: 0 0 6px rgba(255, 242, 0, 0.3);
+        }
+
+        .locked-field {
+            background-color: #1a1a1a;
+            color: var(--glow-blue);
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #161616;
+            color: var(--glow-yellow);
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            background-color: #222;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #2a2a2a;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.68rem;
+            text-align: center;
+        }
+
+        .badge-safe { background-color: rgba(0, 255, 102, 0.15); color: var(--alert-green); border: 1px solid var(--alert-green); }
+        .badge-warn { background-color: rgba(255, 153, 0, 0.15); color: var(--alert-orange); border: 1px solid var(--alert-orange); }
+        .badge-crit { background-color: rgba(255, 0, 0, 0.2); color: var(--youtube-red); border: 1px solid var(--youtube-red); text-shadow: 0 0 4px var(--youtube-red); }
+
+        .metric-summary-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .metric-card {
+            background: #151515;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid var(--glow-blue);
+            text-align: center;
+        }
+
+        .metric-val {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--glow-white);
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Horizon Addis Tyre S.C.</h1>
+        <h2>Production Planning & Stock Awakening Matrix</h2>
+    </header>
+
+    <!-- LIVE PLANT LEVEL STATISTICS -->
+    <div class="panel style="margin-bottom: 15px;">
+        <div class="panel-title">Active Factory Summary Metrics</div>
+        <div class="metric-summary-container">
+            <div class="metric-card" style="border-left-color: var(--glow-yellow);">
+                <label>Daily Output Target</label>
+                <div class="metric-val" id="summary-daily-target">0 Pcs</div>
+            </div>
+            <div class="metric-card" style="border-left-color: var(--glow-blue);">
+                <label>Monthly Target</label>
+                <div class="metric-val" id="summary-monthly-target">0 Pcs</div>
+            </div>
+            <div class="metric-card" style="border-left-color: var(--alert-green);">
+                <label>Total Pipeline Stock</label>
+                <div class="metric-val" id="summary-total-stock">0 Kg</div>
+            </div>
+            <div class="metric-card" style="border-left-color: var(--youtube-red);">
+                <label>Active Outage Alarms</label>
+                <div class="metric-val" id="summary-active-alarms" style="color: var(--youtube-red);">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+
+        <!-- PLAN PARAMETERS -->
+        <div class="panel">
+            <div class="panel-title">1. Operational Sizing & Downline Mix Plan</div>
+            <div class="form-group">
+                <label for="tyre-size-select">Active Tyre Size Designation</label>
+                <select id="tyre-size-select" onchange="calculateMRP()">
+                    <!-- Populated dynamically via structural mapping matrix -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mapped Upstream Compound Formula</label>
+                <input type="text" id="linked-compound" class="locked-field" readonly value="Loading...">
+            </div>
+            <div class="form-group">
+                <label for="daily-plan-input">Target Daily Compound Consumption Base (Pcs)</label>
+                <input type="number" id="daily-plan-input" value="450" oninput="calculateMRP()">
+            </div>
+        </div>
+
+        <!-- RE-CALIBRATION ADJUSTMENTS -->
+        <div class="panel">
+            <div class="panel-title">2. Warehouse Pipeline Control Multipliers</div>
+            <div class="form-group">
+                <label for="global-beg-modifier">Beginning Stock Tuning Multiplier</label>
+                <input type="number" id="global-beg-modifier" value="1.0" step="0.1" oninput="calculateMRP()">
+            </div>
+            <div class="form-group">
+                <label for="global-wip-modifier">Work-In-Process (WIP) Line Multiplier</label>
+                <input type="number" id="global-wip-modifier" value="1.0" step="0.1" oninput="calculateMRP()">
+            </div>
+        </div>
+
+        <!-- MAIN PRODUCTION HORIZON BOARD -->
+        <div class="panel full-width">
+            <div class="panel-title">3. Master Dynamic Material Breakdown & Multi-Horizon Awakening Alarm Matrix</div>
+            <div class="table-container">
+                <table id="mrp-table">
+                    <thead>
+                        <tr>
+                            <th>Raw Material Type</th>
+                            <th>Total Stock (Kg)</th>
+                            <th>Daily Cons. (Kg)</th>
+                            <th>Actual Running Days</th>
+                            <th>15D Alarm</th>
+                            <th>30D Alarm</th>
+                            <th>60D Alarm</th>
+                            <th>90D Alarm</th>
+                            <th>150D Alarm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mrp-tbody">
+                        <!-- Calculated rows dynamically outputted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Exact manufacturing size matrix to downstream recipe links matching files
+        const productionDataMatrix = {
+            "1200-20 NB-72 18PR": { compound: "ILC-FM / KIP-FM" },
+            "1100-20 HT-90 16/18PR": { compound: "KIP-FM / LN-6647" },
+            "8.25-16 HT-40 16PR": { compound: "LN-6647 / 073-FM" },
+            "750-16 16PR HT-90": { compound: "KIP-FM / 073-FM" },
+            "750-16 AT-20 14PR": { compound: "ILC-FM / 073-FM" }
+        };
+
+        // Material arrays built straight from the spreadsheet rows
+        const compoundRawMaterialsMap = {
+            "ILC-FM / KIP-FM": [
+                { material: "SMR-20 (SIR /SMR-20)", dailyBase: 9083.55, baseBeg: 236172, baseWip: 45000 },
+                { material: "BEBEKA RUBBER (SMR-20)", dailyBase: 13.11, baseBeg: 340, baseWip: 50 },
+                { material: "BR 1220 (SKD-2)", dailyBase: 1174.57, baseBeg: 30538, baseWip: 5000 },
+                { material: "SBR 1500 (Kralex 1500)", dailyBase: 461.47, baseBeg: 11998, baseWip: 2500 },
+                { material: "N-220 / ISAF", dailyBase: 480.04, baseBeg: 15400, baseWip: 3000 }
+            ],
+            "KIP-FM / LN-6647": [
+                { material: "SMR-20 (SIR /SMR-20)", dailyBase: 9083.55, baseBeg: 236172, baseWip: 45000 },
+                { material: "SBR 1712 (Kralex 1712)", dailyBase: 590.77, baseBeg: 15359, baseWip: 2200 },
+                { material: "EXXON CHLOROBUTYL 1066", dailyBase: 64.44, baseBeg: 1675, baseWip: 300 },
+                { material: "N-330 / HAF", dailyBase: 1250.33, baseBeg: 45000, baseWip: 8000 }
+            ],
+            "LN-6647 / 073-FM": [
+                { material: "BUTYL RUBBER BK 1675 N", dailyBase: 22.41, baseBeg: 582, baseWip: 90 },
+                { material: "WHOLE TYRE RECLAIM RUBBER", dailyBase: 187.38, baseBeg: 4871, baseWip: 900 },
+                { material: "ECCOR RBR 70", dailyBase: 2.53, baseBeg: 65, baseWip: 15 }
+            ],
+            "KIP-FM / 073-FM": [
+                { material: "SMR-20 (SIR /SMR-20)", dailyBase: 9083.55, baseBeg: 236172, baseWip: 45000 },
+                { material: "BR 1220 (SKD-2)", dailyBase: 1174.57, baseBeg: 30538, baseWip: 5000 },
+                { material: "WHOLE TYRE RECLAIM RUBBER", dailyBase: 187.38, baseBeg: 4871, baseWip: 900 }
+            ],
+            "ILC-FM / 073-FM": [
+                { material: "SMR-20 (SIR /SMR-20)", dailyBase: 9083.55, baseBeg: 236172, baseWip: 45000 },
+                { material: "SBR 1500 (Kralex 1500)", dailyBase: 461.47, baseBeg: 11998, baseWip: 2500 },
+                { material: "ECCOR RBR 70", dailyBase: 2.53, baseBeg: 65, baseWip: 15 }
+            ]
+        };
+
+        function initDashboard() {
+            const selectEl = document.getElementById('tyre-size-select');
+            selectEl.innerHTML = "";
+            for (let size in productionDataMatrix) {
+                let opt = document.createElement('option');
+                opt.value = size;
+                opt.innerText = size;
+                selectEl.appendChild(opt);
+            }
+            calculateMRP();
+        }
+
+        function calculateMRP() {
+            const selectedSize = document.getElementById('tyre-size-select').value;
+            const dailyPlan = parseFloat(document.getElementById('daily-plan-input').value) || 0;
+            const begMod = parseFloat(document.getElementById('global-beg-modifier').value) || 1.0;
+            const wipMod = parseFloat(document.getElementById('global-wip-modifier').value) || 1.0;
+
+            const compoundCode = productionDataMatrix[selectedSize].compound;
+            document.getElementById('linked-compound').value = compoundCode;
+
+            // Update KPI Metric Blocks
+            document.getElementById('summary-daily-target').innerText = dailyPlan.toLocaleString() + " Pcs";
+            document.getElementById('summary-monthly-target').innerText = (dailyPlan * 30).toLocaleString() + " Pcs";
+
+            const materials = compoundRawMaterialsMap[compoundCode] || [];
+            const tbody = document.getElementById('mrp-tbody');
+            tbody.innerHTML = "";
+
+            let globalTotalStock = 0;
+            let activeAlarmsCount = 0;
+
+            materials.forEach(item => {
+                // Calculate Available Inventory (Beginning Balance + Work-In-Process)
+                const totalStockKg = (item.baseBeg * begMod) + (item.baseWip * wipMod);
+                globalTotalStock += totalStockKg;
+
+                // Scale daily consumption based on planning inputs (normalized relative to 450 pcs base plan)
+                const dailyConsumptionKg = item.dailyBase * (dailyPlan / 450);
+
+                // Run exact Coverage Days formula
+                let runningDays = 0;
+                if (dailyConsumptionKg > 0) {
+                    runningDays = Math.round(totalStockKg / dailyConsumptionKg);
+                }
+
+                // Check active horizons for alarms
+                if (runningDays <= 15) activeAlarmsCount++;
+                if (runningDays <= 30) activeAlarmsCount++;
+                if (runningDays <= 60) activeAlarmsCount++;
+                if (runningDays <= 90) activeAlarmsCount++;
+                if (runningDays <= 150) activeAlarmsCount++;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${item.material}</strong></td>
+                    <td>${Math.round(totalStockKg).toLocaleString()} kg</td>
+                    <td>${Math.round(dailyConsumptionKg).toLocaleString()} kg</td>
+                    <td><span class="badge ${runningDays <= 15 ? 'badge-crit' : (runningDays <= 60 ? 'badge-warn' : 'badge-safe')}">${runningDays} Days</span></td>
+                    <td>${evaluateAlarm(runningDays, 15)}</td>
+                    <td>${evaluateAlarm(runningDays, 30)}</td>
+                    <td>${evaluateAlarm(runningDays, 60)}</td>
+                    <td>${evaluateAlarm(runningDays, 90)}</td>
+                    <td>${evaluateAlarm(runningDays, 150)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('summary-total-stock').innerText = Math.round(globalTotalStock).toLocaleString() + " Kg";
+            document.getElementById('summary-active-alarms').innerText = activeAlarmsCount;
+        }
+
+        function evaluateAlarm(actualDays, horizonThreshold) {
+            if (actualDays <= horizonThreshold) {
+                return `<span class="badge badge-crit">ALARM</span>`;
+            }
+            return `<span class="badge badge-safe">OK</span>`;
+        }
+
+        window.onload = initDashboard;
+    </script>
+</body>
+</html>
