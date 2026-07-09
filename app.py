@@ -26,12 +26,11 @@ st.markdown("""
 
 st.markdown('<p class="glow-header-1">Horizon Addis Tyre S.C.</p>', unsafe_allow_html=True)
 st.markdown('<p class="glow-header-2">Product Industrialization & QA — Mobile Board</p>', unsafe_allow_html=True)
-st.markdown("<hr>", unsafe_allowed_html=True)
+st.markdown("<hr>", unsafe_allow_html=True) # FIXED PARAMETER NAME HERE
 
 # ----------------------------------------------------
 # 📊 MASTER PRODUCTION MATERIALS DATABASE (COMPLETE ROSTER)
 # ----------------------------------------------------
-# All tire sizes listed explicitly from your tracking sheet configuration
 sizes = [
     # Heavy & Light Commercial Bias / Truck
     "8.25-16 HT-40 16PR", "8.25-16 HT-60 16PR", "8.25-20 NB-32/27 14PR", 
