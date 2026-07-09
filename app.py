@@ -37,20 +37,20 @@ sizes = [
     "8.25-16 HT-40 16PR", "750-16 16PR HT-90", "750-16 AT-20 14PR"
 ]
 
-# Real factory parameters from your 2012 Business Plan logs
+# Real factory parameters from your master planning log balances
 factory_inventory = [
-    {"material": "SMR-20 (SIR/SMR)", "daily_base": 9083.55, "beg": 236172, "wip": 45000},
-    {"material": "BEBEKA RUBBER", "daily_base": 13.11, "beg": 340, "wip": 50},
-    {"material": "BR 1220 (SKD-2)", "daily_base": 1174.57, "beg": 30538, "wip": 5000},
-    {"material": "SBR 1500 (Kralex)", "daily_base": 461.47, "beg": 11998, "wip": 2500},
-    {"material": "SBR 1712 (Kralex)", "daily_base": 590.77, "beg": 15359, "wip": 2200},
-    {"material": "CHLOROBUTYL 1066", "daily_base": 64.44, "beg": 1675, "wip": 300},
-    {"material": "BUTYL BK 1675 N", "daily_base": 22.41, "beg": 582, "wip": 90},
-    {"material": "RECLAIM RUBBER", "daily_base": 187.38, "beg": 4871, "wip": 900},
-    {"material": "ECCOR RBR 70", "daily_base": 2.53, "beg": 65, "wip": 15},
-    {"material": "N-220 / ISAF", "daily_base": 480.04, "beg": 15400, "wip": 3000},
-    {"material": "LN-4540", "daily_base": 136.81, "beg": 42683, "wip": 3556},
-    {"material": "LN-2530", "daily_base": 92.37, "beg": 28820, "wip": 2401}
+    {"material": "SMR-20 (SIR/SMR)", "daily_base": 9083.55, "beg": 2834068.52, "wip": 236172.37},
+    {"material": "BEBEKA RUBBER", "daily_base": 13.11, "beg": 4090.03, "wip": 340.83},
+    {"material": "BR 1220 (SKD-2)", "daily_base": 1174.57, "beg": 366465.94, "wip": 30538.82},
+    {"material": "SBR 1500 (Kralex)", "daily_base": 461.47, "beg": 143979.91, "wip": 11998.32},
+    {"material": "SBR 1712 (Kralex)", "daily_base": 590.77, "beg": 184323.00, "wip": 15360.25},
+    {"material": "CHLOROBUTYL 1066", "daily_base": 64.44, "beg": 20106.32, "wip": 1675.52},
+    {"material": "BUTYL BK 1675 N", "daily_base": 22.41, "beg": 6993.45, "wip": 582.78},
+    {"material": "RECLAIM RUBBER", "daily_base": 187.38, "beg": 58463.35, "wip": 4871.94},
+    {"material": "ECCOR RBR 70", "daily_base": 2.53, "beg": 790.62, "wip": 65.88},
+    {"material": "N-220 / ISAF", "daily_base": 480.04, "beg": 149774.20, "wip": 12481.18},
+    {"material": "LN-4540", "daily_base": 136.81, "beg": 42683.95, "wip": 3556.99},
+    {"material": "LN-2530", "daily_base": 92.37, "beg": 28820.40, "wip": 2401.70}
 ]
 
 # ----------------------------------------------------
@@ -62,21 +62,21 @@ col1, col2, col3 = st.columns(3)
 with col1:
     daily_target = st.number_input("Plan (Pcs)", min_value=1, value=450, step=50)
 with col2:
-    beg_modifier = st.slider("Stock Scale", min_value=0.5, max_value=1.5, value=1.0, step=0.1)
+    beg_modifier = st.slider("Stock Scale", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
 with col3:
-    wip_modifier = st.slider("WIP Scale", min_value=0.5, max_value=1.5, value=1.0, step=0.1)
+    wip_modifier = st.slider("WIP Scale", min_value=0.1, max_value=2.0, value=1.0, step=0.1)
 
 # Execution Logic Loop
 processed_rows = []
 active_alarms = 0
 
 for item in factory_inventory:
-    # Calculate live inventory levels by multiplying inputs safely
+    # Scale current total stock levels based on slider selections
     total_stock = (item["beg"] * beg_modifier) + (item["wip"] * wip_modifier)
     daily_consumption = item["daily_base"] * (daily_target / 450.0)
     running_days = round(total_stock / daily_consumption) if daily_consumption > 0 else 0
     
-    # Format high contrast inline alerts
+    # Format high contrast inline alerts for low-bandwidth mobile views
     a15 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 15 else "<span class='ok-glow'>OK</span>"
     a30 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 30 else "<span class='ok-glow'>OK</span>"
     a60 = "<span class='alarm-glow'>🚨 ALARM</span>" if running_days <= 60 else "<span class='ok-glow'>OK</span>"
@@ -106,7 +106,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allowed_html=True)
 
-# Generate and pass clean HTML table
+# Generate and pass clean HTML table to override layout compression bugs
 html_table = df_display.to_html(classes="mobile-mrp-table", escape=False, index=False)
 st.markdown(html_table, unsafe_allowed_html=True)
 
