@@ -44,37 +44,41 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 📂 AUTOMATED FILE LOADER ENGINE (WITH AUTO-FALLBACK)
+# 📂 AUTOMATED FILE LOADER ENGINE (UPDATED FILENAMES)
 # ----------------------------------------------------
 @st.cache_data
 def load_and_compile_factory_data():
     file_missing = False
+    
+    # 1. Load Tire Sizes & Compound formulation sheets
     try:
-        # Try loading primary compounding records
+        # Looking exactly for your master data sheet
         df_cpd_tyre = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
         df_cpd_tyre = df_cpd_tyre.dropna(subset=[df_cpd_tyre.columns[0]])
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
         df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
         df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.strip()
-    except Exception:
+    except Exception as e:
         file_missing = True
+        # Safety template fallback to prevent visual breaks if file gets disconnected
         df_cpd_tyre = pd.DataFrame({
             "Compound Type": ["Natural Rubber (SMR-20)", "Polybutadiene (BR 1220)", "Carbon Black N330"],
             "750-16 16PR HT-90": [45.0, 15.0, 35.0],
             "9.00-20 14PR": [55.0, 20.0, 42.0]
         })
 
+    # 2. Load Operations Planning Ledger
     try:
-        # Try loading inventory baseline sheets
         df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
         df_planning = df_planning.dropna(subset=[df_planning.columns[0]])
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
+        # Pull baseline warehouse inventory variables
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
-    except Exception:
+    except Exception as e:
         file_missing = True
         df_planning = pd.DataFrame({
             "Material Name": ["Natural Rubber (SMR-20)", "Polybutadiene (BR 1220)", "Carbon Black N330"], 
@@ -87,11 +91,7 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning, is_file_missing = load_and_compile_factory_data()
 
-# Render helpful warning banner if files are absent from current file root
-if is_file_missing:
-    st.warning("⚠️ **System File Disconnection Notice:** The app cannot find your local CSV spreadsheets inside the root folder. Running on structured factory fallback templates instead.")
-
-# Extract non-duplicated profiling columns cleanly
+# Cleanly extract all actual tire sizes from the columns
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 for col in raw_headers:
@@ -121,7 +121,7 @@ with tab_dashboard:
     with col_input1:
         selected_size = st.selectbox(
             "Select Active Production Tire Profile:", 
-            options=tire_sizes_clean if tire_sizes_clean else ["Template Mode Only"]
+            options=tire_sizes_clean if tire_sizes_clean else ["No Data Found"]
         )
     with col_input2:
         production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
@@ -136,8 +136,8 @@ with tab_dashboard:
 
     scale_ratio = production_plan_pcs / 450.0
 
-    # STABLE MATCH ENGINE CRASH PREVENTER
-    if selected_size and selected_size != "Template Mode Only":
+    # STABLE MATCH ENGINE TO PREVENT 'NONE' TYPE ERRORS
+    if selected_size and selected_size != "No Data Found":
         matching_cols = [c for c in df_cpd_tyre.columns if c.startswith(str(selected_size))]
         target_col = matching_cols[0] if matching_cols else df_cpd_tyre.columns[1]
     else:
@@ -149,7 +149,7 @@ with tab_dashboard:
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        # Track formula matrix parameters safely
+        # Look up formulation match
         matching_compounds = df_cpd_tyre[df_cpd_tyre["Compound Type"] == mat_name]
         if not matching_compounds.empty and target_col in df_cpd_tyre.columns:
             raw_weight_value = pd.to_numeric(matching_compounds.iloc[0][target_col], errors='coerce')
