@@ -55,18 +55,19 @@ def load_and_compile_factory_data():
         df_cpd_tyre = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
         df_cpd_tyre = df_cpd_tyre.dropna(subset=[df_cpd_tyre.columns[0]])
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
-        df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
+        # Clean string rows and column names
+        df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.replace(r'\s+', ' ', regex=True).str.strip()
         df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.replace(r'\s+', ' ', regex=True).str.strip()
     except Exception as e:
         file_missing = True
-        df_cpd_tyre = pd.DataFrame({"Compound Type": ["Natural Rubber (SMR-20)", "Polybutadiene (BR 1220)", "Carbon Black N330"]})
+        df_cpd_tyre = pd.DataFrame({"Compound Type": ["ILC-FM", "KIP-FM", "LN-2530", "BEAD WIRE"]})
 
     # 2. Load Operations Planning Ledger
     try:
         df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
         df_planning = df_planning.dropna(subset=[df_planning.columns[0]])
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
-        df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
+        df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.replace(r'\s+', ' ', regex=True).str.strip()
         
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
@@ -74,10 +75,10 @@ def load_and_compile_factory_data():
     except Exception as e:
         file_missing = True
         df_planning = pd.DataFrame({
-            "Material Name": ["Natural Rubber (SMR-20)", "Polybutadiene (BR 1220)", "Carbon Black N330"], 
-            "Beg Stock": [125000, 34000, 89000], 
-            "WIP Stock": [8000, 2500, 6000], 
-            "Base ADD": [9083, 1174, 4500]
+            "Material Name": ["ILC-FM", "KIP-FM", "LN-2530", "BEAD WIRE"], 
+            "Beg Stock": [45000, 32000, 15000, 60000], 
+            "WIP Stock": [2000, 1500, 500, 4000], 
+            "Base ADD": [1200, 950, 400, 2100]
         })
         
     return df_cpd_tyre, df_planning, file_missing
@@ -85,9 +86,8 @@ def load_and_compile_factory_data():
 df_cpd_tyre, df_planning, is_file_missing = load_and_compile_factory_data()
 
 # ----------------------------------------------------
-# 📋 MASTER CATALOG AUTOMATION LAYER
+# 📋 MASTER CATALOG EXTRACTION & UNION LAYER
 # ----------------------------------------------------
-# Directly embedding your complete list to guarantee visibility regardless of CSV delimiter bugs
 master_catalog_sizes = [
     "8.25-16 HT-40 16PR", "8.25-16 HT-60 16PR", "8.25-20 NB-32/27 14PR", "750-16 16PR HT-90",
     "750-16 16PR HT-40", "750-16 16PR HT-46", "750-16 16PR HT-60", "750-16 10PR HT-99",
@@ -108,14 +108,12 @@ master_catalog_sizes = [
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 
-# Merge parsed CSV columns
 for col in raw_headers:
     col_str = str(col).replace(r'\xa0', ' ').replace('\n', ' ').strip()
     col_str = ' '.join(col_str.split())
     if col_str != "Compound Type" and "Unnamed" not in col_str and col_str != "":
         tire_sizes_clean.append(col_str)
 
-# Ensure all master catalog items exist in selection array
 for design_profile in master_catalog_sizes:
     if design_profile not in tire_sizes_clean:
         tire_sizes_clean.append(design_profile)
@@ -144,7 +142,7 @@ with tab_dashboard:
         production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
 
     # ----------------------------------------------------
-    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & BALANCES
+    # 🧮 LOGIC ENGINE: CONNECT SIZES WITH TRUE COMPOUND TYPES
     # ----------------------------------------------------
     mrp_rows = []
     total_batch_kg_day = 0
@@ -153,7 +151,7 @@ with tab_dashboard:
 
     scale_ratio = production_plan_pcs / 450.0
 
-    # STABLE INTERPOLATION ENGINE FOR MISSING FORMULATION COLUMNS
+    # Locate the exact column in the recipe spreadsheet
     if selected_size:
         matching_cols = [c for c in df_cpd_tyre.columns if str(c).strip().lower() == str(selected_size).strip().lower()]
         target_col = matching_cols[0] if matching_cols else None
@@ -161,26 +159,36 @@ with tab_dashboard:
         target_col = None
 
     for idx, row in df_planning.iterrows():
-        mat_name = row["Material Name"]
+        mat_name = str(row["Material Name"]).strip()
         beg_stock = row["Beg Stock"]
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        raw_weight_value = 1.0
+        # LINK ENGINE: Look up the exact technical compound string inside df_cpd_tyre
+        raw_weight_value = 0.0
         if target_col and target_col in df_cpd_tyre.columns:
-            matching_compounds = df_cpd_tyre[df_cpd_tyre["Compound Type"] == mat_name]
+            # Matches codes like "ILC-FM", "LN-2530" directly
+            matching_compounds = df_cpd_tyre[df_cpd_tyre["Compound Type"].str.lower() == mat_name.lower()]
             if not matching_compounds.empty:
                 val = pd.to_numeric(matching_compounds.iloc[0][target_col], errors='coerce')
-                if not pd.isna(val) and val > 0:
+                if not pd.isna(val):
                     raw_weight_value = val
 
+        # If a formulation weight isn't specified in the column matrix, treat it as 0.0 Kg demand
         calculated_add = base_add * scale_ratio * raw_weight_value
         total_current_stock = beg_stock + wip_stock
-        running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
         
+        # Calculate runway coverage cleanly
+        if calculated_add > 0:
+            running_days_coverage = round(total_current_stock / calculated_add)
+        else:
+            running_days_coverage = 999  # Safe indicator if there's no active demand
+
         total_batch_kg_day += calculated_add
 
-        if running_days_coverage <= 15:
+        if calculated_add == 0:
+            status_badge = "<span class='badge-safe'>- NO DEMAND</span>"
+        elif running_days_coverage <= 15:
             critical_alarms += 1
             status_badge = "<span class='badge-crit'>❌ CRITICAL</span>"
         elif running_days_coverage <= 30:
@@ -195,7 +203,7 @@ with tab_dashboard:
             "Material Component": mat_name,
             "Current Stock Balance (Kg)": f"{round(total_current_stock):,}",
             "Daily Demand ADD (Kg)": f"{round(calculated_add):,}",
-            "Runway Coverage": f"<b>{running_days_coverage} Days</b>",
+            "Runway Coverage": f"<b>{running_days_coverage if calculated_add > 0 else '—'} Days</b>",
             "Alarm Status": status_badge,
             "30-Day Demand (Kg)": f"{round(calculated_add * 30):,}",
             "60-Day Demand (Kg)": f"{round(calculated_add * 60):,}",
@@ -250,7 +258,16 @@ with tab_dashboard:
     st.markdown(html_table, unsafe_allow_html=True)
 
 with tab_formulas:
-    st.markdown("### Formulary Tab: Compound Formulation Weight Profiles")
+    st.markdown(f"### Active Formulation Weights for: `{selected_size}`")
+    if target_col and target_col in df_cpd_tyre.columns:
+        # Filter and show exactly what compounds this specific tire size uses
+        df_active_recipe = df_cpd_tyre[["Compound Type", target_col]].copy()
+        df_active_recipe.columns = ["Compound Type Name", "Formulation Weight Factor"]
+        st.dataframe(df_active_recipe, use_container_width=True)
+    else:
+        st.warning("⚠️ No matching explicit recipe column found for this size in the spreadsheet matrix. Showing raw formulation table baseline instead:")
+    
+    st.markdown("#### Complete Global Formulation Master Matrix")
     st.dataframe(df_cpd_tyre, use_container_width=True)
 
 with tab_ledger:
