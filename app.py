@@ -55,7 +55,7 @@ def load_and_compile_factory_data():
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
         df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
         
-        # Format columns safely
+        # Clean out hidden whitespace in column labels
         df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.strip()
         
         # Load Operations Planning Ledger
@@ -88,7 +88,7 @@ for col in raw_headers:
         if clean_name:
             tire_sizes_clean.append(clean_name)
 
-# Keep distinct options ordered perfectly
+# Keep unique choices sorted cleanly
 tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
 # ----------------------------------------------------
@@ -108,7 +108,6 @@ tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingr
 with tab_dashboard:
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        # User selection happens here contextually
         selected_size = st.selectbox(
             "Select Active Production Tire Profile:", 
             options=tire_sizes_clean
@@ -126,20 +125,33 @@ with tab_dashboard:
 
     scale_ratio = production_plan_pcs / 450.0
 
-    # FIX: Prefix match executed HERE where selected_size is known and accessible
+    # Match the active column handler mapping
     matching_cols = [c for c in df_cpd_tyre.columns if c.startswith(selected_size)]
     if matching_cols:
         target_col = matching_cols[0]
     else:
         target_col = df_cpd_tyre.columns[1]
 
+    # Map material recipe rows directly into active computation arrays
     for idx, row in df_planning.iterrows():
         mat_name = row["Material Name"]
         beg_stock = row["Beg Stock"]
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        calculated_add = base_add * scale_ratio
+        # Multi-Tier Weight Cross-Reference Optimization:
+        # Check if the material matches any component rows inside the compound matrix
+        matching_compounds = df_cpd_tyre[df_cpd_tyre["Compound Type"] == mat_name]
+        if not matching_compounds.empty:
+            # Extract raw phr share weight value directly from column profile
+            raw_weight_value = pd.to_numeric(matching_compounds.iloc[0][target_col], errors='coerce')
+            if pd.isna(raw_weight_value) or raw_weight_value == 0:
+                raw_weight_value = 1.0  # Safe fallback multiplier
+        else:
+            raw_weight_value = 1.0
+
+        # Calculate final exploded demand weight: base demand * scale factor * recipe share weight value
+        calculated_add = base_add * scale_ratio * raw_weight_value
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
         
