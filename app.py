@@ -55,7 +55,7 @@ def load_and_compile_factory_data():
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
         df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
         
-        # FIX: Force clean and strip invisible spaces from all column headers instantly
+        # Format columns safely
         df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.strip()
         
         # Load Operations Planning Ledger
@@ -78,14 +78,17 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Cleanly extract non-duplicated tire size column identifiers
+# Extract clean names by splitting off pandas duplicate notation strings (like .1, .2)
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 for col in raw_headers:
-    if col != "Compound Type" and "Unnamed" not in col and ".1" not in col and ".2" not in col:
-        tire_sizes_clean.append(col)
+    if col != "Compound Type" and "Unnamed" not in col:
+        # Clean out any '.1' or '.2' appended by pandas duplicate handlers
+        clean_name = col.split('.')[0].strip()
+        if clean_name:
+            tire_sizes_clean.append(clean_name)
 
-# Keep distinct selections sorted
+# Keep unique choices sorted cleanly
 tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
 # ----------------------------------------------------
@@ -121,6 +124,16 @@ with tab_dashboard:
     warning_alarms = 0
 
     scale_ratio = production_plan_pcs / 450.0
+
+    # FIX: Safe extraction matching against base string prefix to bypass index errors
+    matching_cols = [c for c in df_cpd_tyre.columns if c.startswith(selected_size)]
+    
+    if matching_cols:
+        # Select the active parameter matrix columns matching our data layout profile
+        target_col = matching_cols[0]
+    else:
+        # Fallback safeguard option to prevent system crashes
+        target_col = df_cpd_tyre.columns[1]
 
     for idx, row in df_planning.iterrows():
         mat_name = row["Material Name"]
