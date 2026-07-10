@@ -44,51 +44,62 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 📂 AUTOMATED FILE LOADER ENGINE (CLEAN EXTRACTION)
+# 📂 AUTOMATED FILE LOADER ENGINE (WITH AUTO-FALLBACK)
 # ----------------------------------------------------
 @st.cache_data
 def load_and_compile_factory_data():
+    file_missing = False
     try:
-        # Load Tire Sizes & Compound formulation sheets
+        # Try loading primary compounding records
         df_cpd_tyre = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
         df_cpd_tyre = df_cpd_tyre.dropna(subset=[df_cpd_tyre.columns[0]])
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
         df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
-        
-        # Clean out hidden whitespace in column labels
         df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.strip()
-        
-        # Load Operations Planning Ledger
+    except Exception:
+        file_missing = True
+        df_cpd_tyre = pd.DataFrame({
+            "Compound Type": ["Natural Rubber (SMR-20)", "Polybutadiene (BR 1220)", "Carbon Black N330"],
+            "750-16 16PR HT-90": [45.0, 15.0, 35.0],
+            "9.00-20 14PR": [55.0, 20.0, 42.0]
+        })
+
+    try:
+        # Try loading inventory baseline sheets
         df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
         df_planning = df_planning.dropna(subset=[df_planning.columns[0]])
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Parse numeric columns safely
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
+    except Exception:
+        file_missing = True
+        df_planning = pd.DataFrame({
+            "Material Name": ["Natural Rubber (SMR-20)", "Polybutadiene (BR 1220)", "Carbon Black N330"], 
+            "Beg Stock": [125000, 34000, 89000], 
+            "WIP Stock": [8000, 2500, 6000], 
+            "Base ADD": [9083, 1174, 4500]
+        })
         
-        return df_cpd_tyre, df_planning
-    except Exception as e:
-        st.error(f"Data Link Error: {str(e)}")
-        df_fallback_cpd = pd.DataFrame({"Compound Type": ["Tread Base", "Sidewall", "Innerliner"]})
-        df_fallback_plan = pd.DataFrame({"Material Name": ["SMR-20", "BR 1220"], "Beg Stock": [150000, 20000], "WIP Stock": [5000, 500], "Base ADD": [9083, 1174]})
-        return df_fallback_cpd, df_fallback_plan
+    return df_cpd_tyre, df_planning, file_missing
 
-df_cpd_tyre, df_planning = load_and_compile_factory_data()
+df_cpd_tyre, df_planning, is_file_missing = load_and_compile_factory_data()
 
-# Cleanly extract non-duplicated selection list inputs
+# Render helpful warning banner if files are absent from current file root
+if is_file_missing:
+    st.warning("⚠️ **System File Disconnection Notice:** The app cannot find your local CSV spreadsheets inside the root folder. Running on structured factory fallback templates instead.")
+
+# Extract non-duplicated profiling columns cleanly
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 for col in raw_headers:
     if col != "Compound Type" and "Unnamed" not in col:
-        # Clean out any '.1' or '.2' appended by pandas duplicate handlers
         clean_name = col.split('.')[0].strip()
         if clean_name:
             tire_sizes_clean.append(clean_name)
 
-# Keep unique choices sorted cleanly
 tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
 # ----------------------------------------------------
@@ -110,7 +121,7 @@ with tab_dashboard:
     with col_input1:
         selected_size = st.selectbox(
             "Select Active Production Tire Profile:", 
-            options=tire_sizes_clean
+            options=tire_sizes_clean if tire_sizes_clean else ["Template Mode Only"]
         )
     with col_input2:
         production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
@@ -125,32 +136,28 @@ with tab_dashboard:
 
     scale_ratio = production_plan_pcs / 450.0
 
-    # Match the active column handler mapping
-    matching_cols = [c for c in df_cpd_tyre.columns if c.startswith(selected_size)]
-    if matching_cols:
-        target_col = matching_cols[0]
+    # STABLE MATCH ENGINE CRASH PREVENTER
+    if selected_size and selected_size != "Template Mode Only":
+        matching_cols = [c for c in df_cpd_tyre.columns if c.startswith(str(selected_size))]
+        target_col = matching_cols[0] if matching_cols else df_cpd_tyre.columns[1]
     else:
-        target_col = df_cpd_tyre.columns[1]
+        target_col = df_cpd_tyre.columns[1] if len(df_cpd_tyre.columns) > 1 else df_cpd_tyre.columns[0]
 
-    # Map material recipe rows directly into active computation arrays
     for idx, row in df_planning.iterrows():
         mat_name = row["Material Name"]
         beg_stock = row["Beg Stock"]
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        # Multi-Tier Weight Cross-Reference Optimization:
-        # Check if the material matches any component rows inside the compound matrix
+        # Track formula matrix parameters safely
         matching_compounds = df_cpd_tyre[df_cpd_tyre["Compound Type"] == mat_name]
-        if not matching_compounds.empty:
-            # Extract raw phr share weight value directly from column profile
+        if not matching_compounds.empty and target_col in df_cpd_tyre.columns:
             raw_weight_value = pd.to_numeric(matching_compounds.iloc[0][target_col], errors='coerce')
             if pd.isna(raw_weight_value) or raw_weight_value == 0:
-                raw_weight_value = 1.0  # Safe fallback multiplier
+                raw_weight_value = 1.0
         else:
             raw_weight_value = 1.0
 
-        # Calculate final exploded demand weight: base demand * scale factor * recipe share weight value
         calculated_add = base_add * scale_ratio * raw_weight_value
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
