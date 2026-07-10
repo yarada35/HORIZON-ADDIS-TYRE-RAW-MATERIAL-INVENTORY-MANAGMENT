@@ -1,80 +1,80 @@
-# ----------------------------------------------------
-# 🧮 LOGIC ENGINE: ROBUST NORMALIZED COLUMN MATCHING
-# ----------------------------------------------------
-def normalize_string(s):
-    """Removes all spaces, hyphens, slashes, and forces lowercase for resilient matching"""
-    if not isinstance(s, str):
-        return ""
-    return "".join(c for c in s.lower() if c.isalnum())
+import streamlit as st
+import pandas as pd
 
-mrp_rows = []
-total_batch_kg_day = 0
-critical_alarms = 0
-warning_alarms = 0
+# ⚙️ PAGE CONFIG
+st.set_page_config(page_title="Horizon Addis Tyre - MRP Engine", layout="wide")
 
-scale_ratio = production_plan_pcs / 450.0
+# 📂 DATA LOADING
+@st.cache_data(ttl=5)
+def load_data():
+    try:
+        # Load datasets
+        df_cpd = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
+        df_plan = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
+        
+        # Standardize dataframes
+        df_cpd.columns = df_cpd.columns.astype(str).str.strip()
+        df_plan.rename(columns={df_plan.columns[0]: "Material Name"}, inplace=True)
+        return df_cpd, df_plan
+    except Exception as e:
+        return pd.DataFrame(), pd.DataFrame()
 
-# Find the recipe column using normalized fuzzy matching
-target_col = None
-if selected_size:
-    norm_selected = normalize_string(selected_size)
-    for col in df_cpd_tyre.columns:
-        if normalize_string(col) == norm_selected:
-            target_col = col
-            break
+df_cpd, df_plan = load_data()
 
-# Process each material configuration row
-for idx, row in df_planning.iterrows():
-    mat_name = str(row["Material Name"]).strip()
-    beg_stock = row["Beg Stock"]
-    wip_stock = row["WIP Stock"]
-    base_add = row["Base ADD"]
+# 🛠️ NORMALIZATION ENGINE
+def normalize(s):
+    """Strips characters to create a common key for matching."""
+    return "".join(c for c in str(s).lower() if c.isalnum())
+
+# 🎛️ UI & TABS
+st.title("🛞 Horizon Addis Tyre Operations")
+tabs = st.tabs(["Control Board", "Mixing Ingredients & Recipes", "Warehouse Ledger"])
+
+# Master list for dropdown
+catalog = [col for col in df_cpd.columns if col != "Compound Type"]
+
+with tabs[0]: # Control Board
+    c1, c2 = st.columns(2)
+    selected_size = c1.selectbox("Select Active Production Tire Profile:", options=catalog)
+    production_plan = c2.number_input("Cured Daily Production Plan (Units/Day)", value=450)
     
-    # Extract formulation weight using the normalized column reference
-    raw_weight_value = 0.0
+    # CALCULATE SCALE (Defined within scope to prevent NameError)
+    scale = production_plan / 450.0
+    
+    # NORMALIZED MATCHING LOGIC
+    norm_sel = normalize(selected_size)
+    target_col = next((c for c in df_cpd.columns if normalize(c) == norm_sel), None)
+    
+    mrp_data = []
+    total_tons = 0
+    
+    for _, row in df_plan.iterrows():
+        mat_name = str(row["Material Name"]).strip()
+        base_add = float(row.iloc[6]) if len(row) > 6 else 1.0
+        
+        weight = 0.0
+        if target_col:
+            # Match material row to the specific compound
+            match = df_cpd[df_cpd.iloc[:, 0].astype(str).str.strip().str.lower() == mat_name.lower()]
+            if not match.empty:
+                weight = pd.to_numeric(match[target_col], errors='coerce').fillna(0).iloc[0]
+        
+        demand = base_add * scale * weight
+        total_tons += demand
+        mrp_data.append({"Material": mat_name, "Daily Demand (Kg)": round(demand, 2)})
+
+    st.metric("Exploded Compound Mix", f"{total_tons/1000:.2f} Tons/Day")
+    st.table(pd.DataFrame(mrp_data))
+
+with tabs[1]: # Mixing Ingredients & Recipes
+    st.subheader(f"Formulation for: {selected_size}")
     if target_col:
-        # Cross-reference the raw materials/compounds rows
-        matching_rows = df_cpd_tyre[df_cpd_tyre["Compound Type"].astype(str).str.strip().str.lower() == mat_name.lower()]
-        if not matching_rows.empty:
-            val = pd.to_numeric(matching_rows.iloc[0][target_col], errors='coerce')
-            if not pd.isna(val):
-                raw_weight_value = val
-
-    # Calculate operational requirements
-    calculated_add = base_add * scale_ratio * raw_weight_value
-    total_current_stock = beg_stock + wip_stock
-    total_batch_kg_day += calculated_add
-    
-    if calculated_add > 0:
-        running_days_coverage = round(total_current_stock / calculated_add)
+        # Displays the matched column clearly
+        df_recipe = df_cpd[["Compound Type", target_col]].copy()
+        df_recipe.columns = ["Compound Type", "Weight Factor"]
+        st.dataframe(df_recipe, use_container_width=True)
     else:
-        running_days_coverage = 999
+        st.warning(f"Could not link recipe column for: {selected_size}. Check spreadsheet headers.")
 
-    if calculated_add == 0:
-        status_badge = "<span class='badge-safe'>- NO DEMAND</span>"
-    elif running_days_coverage <= 15:
-        critical_alarms += 1
-        status_badge = "<span class='badge-crit'>❌ CRITICAL</span>"
-    elif running_days_coverage <= 30:
-        warning_alarms += 1
-        status_badge = "<span class='badge-warn'>⚠️ WARNING</span>"
-    elif running_days_coverage <= lookahead_days:
-        status_badge = "<span class='badge-awake'>💡 AWAKENING</span>"
-    else:
-        status_badge = "<span class='badge-safe'>✓ SAFE</span>"
-
-    mrp_rows.append({
-        "Material Component": mat_name,
-        "Current Stock Balance (Kg)": f"{round(total_current_stock):,}",
-        "Daily Demand ADD (Kg)": f"{round(calculated_add):,}",
-        "Runway Coverage": f"<b>{running_days_coverage if calculated_add > 0 else '—'} Days</b>",
-        "Alarm Status": status_badge,
-        "30-Day Demand (Kg)": f"{round(calculated_add * 30):,}",
-        "60-Day Demand (Kg)": f"{round(calculated_add * 60):,}",
-        "90-Day Demand (Kg)": f"{round(calculated_add * 90):,}",
-        "150-Day Demand (Kg)": f"{round(calculated_add * 150):,}"
-    })
-
-df_mrp_display = pd.DataFrame(mrp_rows)
-
-# ... [Keep your existing KPI Cards layout section here] ...
+with tabs[2]: # Ledger
+    st.dataframe(df_plan, use_container_width=True)
