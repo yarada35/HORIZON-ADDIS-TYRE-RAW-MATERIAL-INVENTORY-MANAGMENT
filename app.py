@@ -44,44 +44,46 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 📂 AUTOMATED FILE LOADER ENGINE (WITH SPACE STRIPPING)
+# 📂 AUTOMATED FILE LOADER ENGINE (DYNAMIC EXTRACTION)
 # ----------------------------------------------------
 @st.cache_data
 def load_and_compile_factory_data():
     try:
-        # Load Sheet 1 & 2: Dynamic Tire to Compound Weight Matrices
+        # Load Tire Sizes & Compound formulation sheets
         df_cpd_tyre = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
         df_cpd_tyre = df_cpd_tyre.dropna(subset=[df_cpd_tyre.columns[0]])
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
-        # Strip invisible trailing spaces from row labels to guarantee bulletproof string matching
         df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
         
-        # Load Sheet 3: Inventory Ledger & Base Demand Configuration
+        # Load Operations Planning Ledger
         df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
         df_planning = df_planning.dropna(subset=[df_planning.columns[0]])
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Parse numbers cleanly
+        # Clean stocks parameters
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
         
         return df_cpd_tyre, df_planning
     except Exception as e:
-        # Fallback system data structure if file link breaks
+        st.error(f"Data Link Error: {str(e)}")
         df_fallback_cpd = pd.DataFrame({"Compound Type": ["Tread Base", "Sidewall", "Innerliner"]})
         df_fallback_plan = pd.DataFrame({"Material Name": ["SMR-20", "BR 1220"], "Beg Stock": [150000, 20000], "WIP Stock": [5000, 500], "Base ADD": [9083, 1174]})
         return df_fallback_cpd, df_fallback_plan
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Clean list of all valid tire size columns
+# Cleanly harvest every tire profile directly from the column headers
 all_columns = list(df_cpd_tyre.columns)
-tire_sizes_list = [col for col in all_columns if col != "Compound Type" and ".1" not in col and "Unnamed" not in col]
+tire_sizes_list = [
+    col for col in all_columns 
+    if col != "Compound Type" and ".1" not in col and "Unnamed" not in col
+]
 
 # ----------------------------------------------------
-# 🎛️ CONTROL PANEL DASHBOARD LAYOUT
+# 🎛️ CONTROL PANEL DASHBOARD INTERFACE
 # ----------------------------------------------------
 col_header_left, col_header_right = st.columns([2, 1])
 with col_header_left:
@@ -97,12 +99,17 @@ tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingr
 with tab_dashboard:
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        selected_size = st.selectbox("Select Active Production Tire Profile", options=tire_sizes_list)
+        # Dynamic multi-tier dropdown directly reflecting your spreadsheet's dimensions
+        selected_size = st.selectbox(
+            "Select Active Production Tire Profile:", 
+            options=tire_sizes_list,
+            help="Dynamically extracts components recipe scales from spreadsheet columns."
+        )
     with col_input2:
         production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
 
     # ----------------------------------------------------
-    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & HORIZONS
+    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & BALANCES
     # ----------------------------------------------------
     mrp_rows = []
     total_batch_kg_day = 0
@@ -117,6 +124,7 @@ with tab_dashboard:
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
+        # Scaled Consumption Engine 
         calculated_add = base_add * scale_ratio
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
@@ -148,7 +156,7 @@ with tab_dashboard:
 
     df_mrp_display = pd.DataFrame(mrp_rows)
 
-    # --- ZONE A: EXECUTIVE KPI CARDS ---
+    # --- ZONE A: EXECUTIVE KPI DISPLAY CARDS ---
     col_card1, col_card2, col_card3, col_card4 = st.columns(4)
     with col_card1:
         st.markdown(f"""
@@ -187,7 +195,7 @@ with tab_dashboard:
         </div>
         """, unsafe_allow_html=True)
 
-    # --- ZONE B & C: THE LIVE CONTROL MATRIX TABLE ---
+    # --- ZONE B & C: LIVE PRODUCTION MATRIX ---
     st.markdown("### Material Requirements Planning (MRP) Explosion Matrix")
     html_table = df_mrp_display.to_html(classes="classic-mrp-table", escape=False, index=False)
     st.markdown(html_table, unsafe_allow_html=True)
@@ -200,9 +208,7 @@ with tab_ledger:
     st.markdown("### Raw Warehouse Stock & WIP Baseline Configurations")
     st.dataframe(df_planning, use_container_width=True)
 
-# ----------------------------------------------------
-# 🔄 FIXED REFRESH MECHANISM (FIXES RE-RUN CRASH)
-# ----------------------------------------------------
+# --- REFRESH BALANCES ENGINE ---
 if st.button("🔄 Force Sync Warehouse Balances"):
     st.cache_data.clear()
-    st.rerun()  # Native fixed rerun command replaces deprecated experimental call
+    st.rerun()
