@@ -78,7 +78,7 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Extract clean names by splitting off pandas duplicate notation strings (like .1, .2)
+# Cleanly extract non-duplicated selection list inputs
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 for col in raw_headers:
@@ -88,7 +88,7 @@ for col in raw_headers:
         if clean_name:
             tire_sizes_clean.append(clean_name)
 
-# Keep unique choices sorted cleanly
+# Keep distinct options ordered perfectly
 tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
 # ----------------------------------------------------
@@ -108,6 +108,7 @@ tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingr
 with tab_dashboard:
     col_input1, col_input2 = st.columns(2)
     with col_input1:
+        # User selection happens here contextually
         selected_size = st.selectbox(
             "Select Active Production Tire Profile:", 
             options=tire_sizes_clean
@@ -125,14 +126,11 @@ with tab_dashboard:
 
     scale_ratio = production_plan_pcs / 450.0
 
-    # FIX: Safe extraction matching against base string prefix to bypass index errors
+    # FIX: Prefix match executed HERE where selected_size is known and accessible
     matching_cols = [c for c in df_cpd_tyre.columns if c.startswith(selected_size)]
-    
     if matching_cols:
-        # Select the active parameter matrix columns matching our data layout profile
         target_col = matching_cols[0]
     else:
-        # Fallback safeguard option to prevent system crashes
         target_col = df_cpd_tyre.columns[1]
 
     for idx, row in df_planning.iterrows():
@@ -141,7 +139,6 @@ with tab_dashboard:
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        # Calculate dynamic usage metrics scale safely
         calculated_add = base_add * scale_ratio
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
