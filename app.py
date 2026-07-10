@@ -1,22 +1,23 @@
 import streamlit as st
 import pandas as pd
+import difflib
 
 # ⚙️ SYSTEM SETTINGS
 st.set_page_config(page_title="Horizon Addis Tyre - MRP Engine", layout="wide")
 
-# 📂 DATA LOADER: UNION CSV + MASTER CATALOG
+# 📂 DATA LOADER
 @st.cache_data(ttl=5)
 def load_data():
     try:
         df = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
-        # Normalize headers
+        # Normalize headers: remove newlines and extra spaces
         df.columns = [str(col).replace('\n', ' ').strip() for col in df.columns]
         if df.columns[0] != "Compound Type":
             df.rename(columns={df.columns[0]: "Compound Type"}, inplace=True)
         return df
     except Exception as e:
         st.error(f"Error loading CSV: {e}")
-        return pd.DataFrame(columns=["Compound Type"])
+        return None
 
 df_cpd_tyre = load_data()
 
@@ -42,12 +43,11 @@ master_catalog = [
     "5763 BLADER", "5765 BLADDER", "FLAPS", "GRG", "C-100", "C-200", "107 MA"
 ]
 
-# Merge lists
-csv_headers = [col for col in df_cpd_tyre.columns if col != "Compound Type"]
-all_sizes = sorted(list(set(csv_headers + master_catalog)))
-
 # 🎛️ UI: DROPDOWN
 st.title("🛞 Horizon Addis Tyre: Formulation Matcher")
+csv_headers = [col for col in df_cpd_tyre.columns if col != "Compound Type"] if df_cpd_tyre is not None else []
+all_sizes = sorted(list(set(csv_headers + master_catalog)))
+
 selected_size = st.selectbox("Select Active Production Tire Profile:", options=all_sizes)
 
 # 💡 MATCHING LOGIC
@@ -64,15 +64,24 @@ target_col = find_target_column(selected_size, csv_headers)
 tab_dashboard, tab_formulas = st.tabs(["Control Board", "Mixing Ingredients & Recipes"])
 
 with tab_dashboard:
-    st.write(f"### Current Selection: {selected_size}")
     if target_col:
         st.success(f"Successfully mapped to matrix column: **{target_col}**")
     else:
         st.error("No recipe column found in the CSV for this size.")
+        st.write("---")
+        st.write("### Diagnostics: Identifying the issue")
+        st.write("The system cannot find an exact match for your selection in the CSV headers.")
+        st.write(f"**Available Columns (first 10):** {csv_headers[:10]}")
+        
+        matches = difflib.get_close_matches(selected_size, csv_headers, n=3, cutoff=0.5)
+        if matches:
+            st.write(f"Did you mean one of these? {matches}")
+        else:
+            st.write("No similar columns found. Check your Excel spelling.")
 
 with tab_formulas:
-    if target_col:
+    if target_col and df_cpd_tyre is not None:
         df_active = df_cpd_tyre[["Compound Type", target_col]].copy()
         st.dataframe(df_active, use_container_width=True)
     else:
-        st.warning("Please check your CSV file for missing columns.")
+        st.warning("Please select a valid size that exists in your CSV file.")
