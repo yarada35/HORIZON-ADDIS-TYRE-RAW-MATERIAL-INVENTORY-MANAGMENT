@@ -44,7 +44,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 📂 AUTOMATED FILE LOADER ENGINE (DYNAMIC EXTRACTION)
+# 📂 AUTOMATED FILE LOADER ENGINE (CLEAN EXTRACTION)
 # ----------------------------------------------------
 @st.cache_data
 def load_and_compile_factory_data():
@@ -61,7 +61,7 @@ def load_and_compile_factory_data():
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Clean stocks parameters
+        # Parse numbers cleanly
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
@@ -75,12 +75,15 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Cleanly harvest every tire profile directly from the column headers
-all_columns = list(df_cpd_tyre.columns)
-tire_sizes_list = [
-    col for col in all_columns 
-    if col != "Compound Type" and ".1" not in col and "Unnamed" not in col
-]
+# Cleanly extract non-duplicated pure tire size columns
+raw_headers = list(df_cpd_tyre.columns)
+tire_sizes_clean = []
+for col in raw_headers:
+    if col != "Compound Type" and "Unnamed" not in col and ".1" not in col and ".2" not in col:
+        tire_sizes_clean.append(col.strip())
+
+# Remove any duplicates to keep selectbox input unique
+tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
 # ----------------------------------------------------
 # 🎛️ CONTROL PANEL DASHBOARD INTERFACE
@@ -99,10 +102,10 @@ tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingr
 with tab_dashboard:
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        # Dynamic multi-tier dropdown directly reflecting your spreadsheet's dimensions
+        # Fixed clean selectbox dropdown
         selected_size = st.selectbox(
             "Select Active Production Tire Profile:", 
-            options=tire_sizes_list,
+            options=tire_sizes_clean,
             help="Dynamically extracts components recipe scales from spreadsheet columns."
         )
     with col_input2:
