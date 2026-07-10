@@ -61,7 +61,7 @@ def load_and_compile_factory_data():
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Parse stock limits and indicators safely
+        # Parse numbers cleanly
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
@@ -75,7 +75,7 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Cleanly extract pure tire size names from data layout matrix
+# Cleanly extract pure tire size names from the columns matrix
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 for col in raw_headers:
@@ -101,22 +101,23 @@ tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingr
 with tab_dashboard:
     col_input1, col_input2 = st.columns(2)
     with col_input1:
+        # Fixed clean selectbox drop list
         selected_size = st.selectbox(
-            "Select Active Production Tire Profile:", 
+            label="Select Active Production Tire Profile:", 
             options=tire_sizes_clean
         )
     with col_input2:
         production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
 
     # ----------------------------------------------------
-    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & BALANCES (FIXED KEY)
+    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & BALANCES
     # ----------------------------------------------------
     mrp_rows = []
     total_batch_kg_day = 0
     critical_alarms = 0
     warning_alarms = 0
 
-    # Explicit calculation scalar mapping cleanly to chosen options matrix
+    # Dynamic multiplier ratio based on the target volume input
     scale_ratio = production_plan_pcs / 450.0
 
     for idx, row in df_planning.iterrows():
@@ -125,7 +126,6 @@ with tab_dashboard:
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        # Calculate dynamic usage metrics scale
         calculated_add = base_add * scale_ratio
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
