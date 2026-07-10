@@ -1,226 +1,243 @@
 import streamlit as st
 import pandas as pd
 
-# Clean industrial dark room setup optimized for mobile data saving
+# ----------------------------------------------------
+# ⚙️ INITIAL CONFIGURATION & GRAPHICAL WRAPPING
+# ----------------------------------------------------
 st.set_page_config(
-    page_title="Horizon Addis Tyre - Industrial BOM & MRP Engine",
+    page_title="Tire Curing & Cpd Operations Control",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# High contrast custom industrial mobile UI theme
+# Custom CSS injecting the exact layout blueprint from the reference dashboard
 st.markdown("""
     <style>
-    .glow-header-1 { color: #fff200; font-size: 1.3rem; font-weight: bold; text-transform: uppercase; text-align: center; margin-bottom: 0px;}
-    .glow-header-2 { color: #00d2ff; font-size: 0.85rem; text-transform: uppercase; text-align: center; margin-bottom: 10px;}
-    hr { border: 1px solid #ff0000 !important; margin-top: 5px !important; margin-bottom: 12px !important; }
+    /* Dark glass container panels */
+    .metric-card {
+        background-color: #111625;
+        border: 1px solid #1e2640;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 15px;
+        position: relative;
+    }
+    .metric-card-title {
+        color: #8fa0dd;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .metric-card-value {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 5px;
+        margin-bottom: 2px;
+    }
+    .metric-card-subtext {
+        color: #536394;
+        font-size: 11px;
+    }
     
-    /* High contrast mobile responsive styling for raw HTML tables */
-    .mobile-mrp-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: monospace, sans-serif; color: #ffffff; }
-    .mobile-mrp-table th { background-color: #fff200 !important; color: #000000 !important; padding: 6px 4px; font-weight: bold; text-align: left; text-transform: uppercase; }
-    .mobile-mrp-table td { padding: 6px 4px; border-bottom: 1px solid #333333; background-color: #121212; }
+    /* Right side indicator badges */
+    .badge-icon {
+        position: absolute;
+        right: 16px;
+        top: 24px;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+    .badge-blue { background-color: rgba(24, 144, 255, 0.15); color: #1890ff; }
+    .badge-cyan { background-color: rgba(0, 210, 255, 0.15); color: #00d2ff; }
+    .badge-red { background-color: rgba(255, 77, 79, 0.15); color: #ff4d4f; }
+    .badge-yellow { background-color: rgba(250, 219, 20, 0.15); color: #fadb14; }
+
+    /* Industrial High-Contrast Datatable Framework */
+    .classic-mrp-table { width: 100%; border-collapse: collapse; font-size: 12px; color: #e2e8f0; margin-top: 10px; }
+    .classic-mrp-table th { background-color: #171e31 !important; color: #8fa0dd !important; padding: 10px 8px; font-weight: bold; text-align: left; border-bottom: 2px solid #222f4d; text-transform: uppercase; font-size: 11px; }
+    .classic-mrp-table td { padding: 10px 8px; border-bottom: 1px solid #1e2640; background-color: #0b0f19; }
     
-    /* Strict realization of conditional formatting alarms via HTML injection */
-    .alarm-crit { background-color: #ff3333 !important; color: #ffffff !important; font-weight: bold; padding: 2px 4px; border-radius: 2px; text-align: center; display: block; }
-    .alarm-warn { background-color: #ff9900 !important; color: #000000 !important; font-weight: bold; padding: 2px 4px; border-radius: 2px; text-align: center; display: block; }
-    .alarm-awake { background-color: #0088ff !important; color: #ffffff !important; font-weight: bold; padding: 2px 4px; border-radius: 2px; text-align: center; display: block; }
-    .alarm-ok { background-color: #00cc44 !important; color: #000000 !important; padding: 2px 4px; border-radius: 2px; text-align: center; display: block; }
+    /* Strict alarm criteria formatting text components */
+    .badge-crit { background-color: #ff4d4f; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
+    .badge-warn { background-color: #fa8c16; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
+    .badge-awake { background-color: #1890ff; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
+    .badge-safe { background-color: #52c41a; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="glow-header-1">Horizon Addis Tyre S.C.</p>', unsafe_allow_html=True)
-st.markdown('<p class="glow-header-2">Product Industrialization & QA — Multi-Tier BOM & MRP Control</p>', unsafe_allow_html=True)
-st.markdown("<hr>", unsafe_allow_html=True)
+# Top Bar Header Setup
+col_header_left, col_header_right = st.columns([2, 1])
+with col_header_left:
+    st.title("🛞 Tire Curing & Cpd Operations")
+    st.caption("Planning Controller cascading specification data blocks dynamically across execution horizons.")
+with col_header_right:
+    st.markdown("<br>", unsafe_allow_html=True)
+    running_days_target = st.number_input("RUNNING DAYS LOOK-AHEAD:", min_value=1, max_value=150, value=26)
 
 # ----------------------------------------------------
-# 📊 DATA MODEL & SYSTEM DATABASES (SHEETS 1, 2 & 3)
+# 📊 BACKEND SYSTEM DATABASES (BOM DATA MODELS)
 # ----------------------------------------------------
-
-# --- SHEET 1: TIRE SIZE & COMPONENT ASSEMBLY (BOM LEVEL 1) ---
-# Tracks weight distribution of extruded component compounds per tire size unit
 sheet1_bom_level1 = pd.DataFrame([
-    # Heavy Truck Bias Roster
     {"Tire Size": "8.25-16 HT-40 16PR", "Component Name": "Tread Compound", "Compound Code": "CPD-TR-HEAVY", "Weight per Tire (kg)": 14.5},
     {"Tire Size": "8.25-16 HT-40 16PR", "Component Name": "Sidewall Compound", "Compound Code": "CPD-SW-HEAVY", "Weight per Tire (kg)": 6.2},
     {"Tire Size": "8.25-16 HT-40 16PR", "Component Name": "Innerliner Compound", "Compound Code": "CPD-IL-STANDARD", "Weight per Tire (kg)": 3.8},
-    
-    {"Tire Size": "1200-20 NB-72 18PR", "Component Name": "Tread Compound", "Compound Code": "CPD-TR-HEAVY", "Weight per Tire (kg)": 24.0},
-    {"Tire Size": "1200-20 NB-72 18PR", "Component Name": "Sidewall Compound", "Compound Code": "CPD-SW-HEAVY", "Weight per Tire (kg)": 11.5},
-    {"Tire Size": "1200-20 NB-72 18PR", "Component Name": "Innerliner Compound", "Compound Code": "CPD-IL-STANDARD", "Weight per Tire (kg)": 5.5},
-
-    # Agricultural Series
     {"Tire Size": "18.4-38 HT F-444 14PR", "Component Name": "Tread Compound", "Compound Code": "CPD-TR-AGRI", "Weight per Tire (kg)": 32.5},
     {"Tire Size": "18.4-38 HT F-444 14PR", "Component Name": "Sidewall Compound", "Compound Code": "CPD-SW-AGRI", "Weight per Tire (kg)": 14.0},
-    {"Tire Size": "18.4-38 HT F-444 14PR", "Component Name": "Innerliner Compound", "Compound Code": "CPD-IL-STANDARD", "Weight per Tire (kg)": 8.0},
-    
-    # Solid Industrial / Forklift (KIP)
-    {"Tire Size": "8.25-15 HT-I-222 16PR", "Component Name": "Solid Core Compound", "Compound Code": "CPD-KIP-SOLID", "Weight per Tire (kg)": 42.0},
-    {"Tire Size": "8.25-15 HT-I-222 16PR", "Component Name": "Base Gum Compound", "Compound Code": "CPD-KIP-BASE", "Weight per Tire (kg)": 12.0}
+    {"Tire Size": "18.4-38 HT F-444 14PR", "Component Name": "Innerliner Compound", "Compound Code": "CPD-IL-STANDARD", "Weight per Tire (kg)": 8.0}
 ])
 
-# --- SHEET 2: COMPOUND INGREDIENTS (BOM LEVEL 2) ---
-# Tracks the structural percentage weight share normalized exactly to 1.0 (100%) per recipe
 sheet2_bom_level2 = pd.DataFrame([
-    # Heavy Truck Formulations
     {"Compound Code": "CPD-TR-HEAVY", "Raw Material ID": "RM-SMR20", "Ingredient Name": "SMR-20 (SIR/SMR)", "Weight Share (%)": 0.65},
     {"Compound Code": "CPD-TR-HEAVY", "Raw Material ID": "RM-BR1220", "Ingredient Name": "BR 1220 (SKD-2)", "Weight Share (%)": 0.15},
     {"Compound Code": "CPD-TR-HEAVY", "Raw Material ID": "RM-N220", "Ingredient Name": "N-220 / ISAF Black", "Weight Share (%)": 0.20},
-    
     {"Compound Code": "CPD-SW-HEAVY", "Raw Material ID": "RM-SMR20", "Ingredient Name": "SMR-20 (SIR/SMR)", "Weight Share (%)": 0.50},
     {"Compound Code": "CPD-SW-HEAVY", "Raw Material ID": "RM-SBR1500", "Ingredient Name": "SBR 1500 (Kralex)", "Weight Share (%)": 0.25},
     {"Compound Code": "CPD-SW-HEAVY", "Raw Material ID": "RM-N220", "Ingredient Name": "N-220 / ISAF Black", "Weight Share (%)": 0.25},
-
-    # Agri Series Formulations
     {"Compound Code": "CPD-TR-AGRI", "Raw Material ID": "RM-SMR20", "Ingredient Name": "SMR-20 (SIR/SMR)", "Weight Share (%)": 0.40},
     {"Compound Code": "CPD-TR-AGRI", "Raw Material ID": "RM-SBR1712", "Ingredient Name": "SBR 1712 (Kralex)", "Weight Share (%)": 0.45},
     {"Compound Code": "CPD-TR-AGRI", "Raw Material ID": "RM-RECLAIM", "Ingredient Name": "RECLAIM RUBBER", "Weight Share (%)": 0.15},
-    
-    {"Compound Code": "CPD-SW-AGRI", "Raw Material ID": "RM-SBR1712", "Ingredient Name": "SBR 1712 (Kralex)", "Weight Share (%)": 0.60},
-    {"Compound Code": "CPD-SW-AGRI", "Raw Material ID": "RM-RECLAIM", "Ingredient Name": "RECLAIM RUBBER", "Weight Share (%)": 0.40},
-
-    # Standard Components
     {"Compound Code": "CPD-IL-STANDARD", "Raw Material ID": "RM-CHLORO", "Ingredient Name": "CHLOROBUTYL 1066", "Weight Share (%)": 0.70},
-    {"Compound Code": "CPD-IL-STANDARD", "Raw Material ID": "RM-BUTYL", "Ingredient Name": "BUTYL BK 1675 N", "Weight Share (%)": 0.30},
-
-    # KIP Solid Industrial Matrices
-    {"Compound Code": "CPD-KIP-SOLID", "Raw Material ID": "RM-SMR20", "Ingredient Name": "SMR-20 (SIR/SMR)", "Weight Share (%)": 0.35},
-    {"Compound Code": "CPD-KIP-SOLID", "Raw Material ID": "RM-RECLAIM", "Ingredient Name": "RECLAIM RUBBER", "Weight Share (%)": 0.50},
-    {"Compound Code": "CPD-KIP-SOLID", "Raw Material ID": "RM-LN2530", "Ingredient Name": "LN-2530 Carbon Black", "Weight Share (%)": 0.15},
-    
-    {"Compound Code": "CPD-KIP-BASE", "Raw Material ID": "RM-SMR20", "Ingredient Name": "SMR-20 (SIR/SMR)", "Weight Share (%)": 0.80},
-    {"Compound Code": "CPD-KIP-BASE", "Raw Material ID": "RM-BR1220", "Ingredient Name": "BR 1220 (SKD-2)", "Weight Share (%)": 0.20}
+    {"Compound Code": "CPD-IL-STANDARD", "Raw Material ID": "RM-BUTYL", "Ingredient Name": "BUTYL BK 1675 N", "Weight Share (%)": 0.30}
 ])
 
-# --- SHEET 3: MASTER INVENTORY & CONSUMPTION LEDGER ---
-# Warehouse balance values directly tied to budget scales
-sheet3_ledger_base = {
-    "RM-SMR20": {"Material Name": "SMR-20 (SIR/SMR)", "Beginning Stock": 2834068.52, "YTD Received": 500000.0, "Live Consumed": 236172.37, "Current WIP": 45000.0},
-    "RM-BEBEKA": {"Material Name": "BEBEKA RUBBER", "Beginning Stock": 4090.03, "YTD Received": 1000.0, "Live Consumed": 340.83, "Current WIP": 50.0},
-    "RM-BR1220": {"Material Name": "BR 1220 (SKD-2)", "Beginning Stock": 366465.94, "YTD Received": 80000.0, "Live Consumed": 30538.82, "Current WIP": 5000.0},
-    "RM-SBR1500": {"Material Name": "SBR 1500 (Kralex)", "Beginning Stock": 143979.91, "YTD Received": 35000.0, "Live Consumed": 11998.32, "Current WIP": 2500.0},
-    "RM-SBR1712": {"Material Name": "SBR 1712 (Kralex)", "Beginning Stock": 184323.00, "YTD Received": 40000.0, "Live Consumed": 15360.25, "Current WIP": 2200.0},
-    "RM-CHLORO": {"Material Name": "CHLOROBUTYL 1066", "Beginning Stock": 20106.32, "YTD Received": 5000.0, "Live Consumed": 1675.52, "Current WIP": 300.0},
-    "RM-BUTYL": {"Material Name": "BUTYL BK 1675 N", "Beginning Stock": 6993.45, "YTD Received": 1500.0, "Live Consumed": 582.78, "Current WIP": 90.0},
-    "RM-RECLAIM": {"Material Name": "RECLAIM RUBBER", "Beginning Stock": 58463.35, "YTD Received": 12000.0, "Live Consumed": 4871.94, "Current WIP": 900.0},
-    "RM-N220": {"Material Name": "N-220 / ISAF Black", "Beginning Stock": 149774.20, "YTD Received": 30000.0, "Live Consumed": 12481.18, "Current WIP": 3000.0},
-    "RM-LN2530": {"Material Name": "LN-2530 Carbon Black", "Beginning Stock": 28820.40, "YTD Received": 5000.0, "Live Consumed": 2401.70, "Current WIP": 500.0}
+sheet3_inventory_ledger = {
+    "RM-SMR20": {"Beginning Stock": 125000.0, "YTD Received": 45000.0, "Live Consumed": 25000.0},
+    "RM-BR1220": {"Beginning Stock": 8000.0, "YTD Received": 2000.0, "Live Consumed": 1500.0},
+    "RM-SBR1500": {"Beginning Stock": 14000.0, "YTD Received": 3000.0, "Live Consumed": 2100.0},
+    "RM-SBR1712": {"Beginning Stock": 4500.0, "YTD Received": 1000.0, "Live Consumed": 800.0},
+    "RM-N220": {"Beginning Stock": 31000.0, "YTD Received": 8000.0, "Live Consumed": 6200.0},
+    "RM-CHLORO": {"Beginning Stock": 22000.0, "YTD Received": 4000.0, "Live Consumed": 3100.0},
+    "RM-BUTYL": {"Beginning Stock": 1200.0, "YTD Received": 500.0, "Live Consumed": 400.0},
+    "RM-RECLAIM": {"Beginning Stock": 19000.0, "YTD Received": 5000.0, "Live Consumed": 2000.0}
 }
 
 # ----------------------------------------------------
-# 🎛️ USER INTERFACE CONTROL DASHBOARD
+# 🎛️ DASHBOARD NAVIGATION TABS (CONTROL BOARD MESH)
 # ----------------------------------------------------
+tab_ctrl, tab_bom, tab_rec = st.tabs(["Control Board", "Tire BOM Explorer", "Feed Recipe Ledger"])
 
-# Establish dynamic presentation layout split tabs
-tab_zone_a, tab_zone_b = st.tabs(["🎯 Zone A: Production Targets & KPIs", "📊 Zone B & C: MRP Material Control Matrix"])
-
-with tab_zone_a:
-    st.markdown("### Zone A: Operational Input Deck")
-    
-    # Active selective array pulled from unique targets
-    active_tire_sizes = list(sheet1_bom_level1["Tire Size"].unique())
-    selected_tire_size = st.selectbox("Assign Curing Line Profile Target", options=active_tire_sizes)
-    
+with tab_ctrl:
+    # Top Setup Configurations Row
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        cured_qty_today = st.number_input("Cured Tires Output Plan (Units/Day)", min_value=1, value=500, step=50)
+        selected_size = st.selectbox("Select Target Tire Production Profile", options=list(sheet1_bom_level1["Tire Size"].unique()))
     with col_input2:
-        global_demand_factor = st.slider("Macro Volume Scaling Multiplier", min_value=0.5, max_value=2.5, value=1.0, step=0.1)
+        cured_plan_volume = st.number_input("Cured Daily Plan Volume (Pcs)", min_value=1, value=1570, step=10)
 
-    st.markdown("---")
-    st.markdown("#### Macro Financial & Volume Forecasts")
+    # Compute Level 1 -> Level 2 Explosions
+    l1_data = sheet1_bom_level1[sheet1_bom_level1["Tire Size"] == selected_size]
+    exploded_bom = pd.merge(l1_data, sheet2_bom_level2, on="Compound Code")
+    exploded_bom["Material per Tire (kg)"] = exploded_bom["Weight per Tire (kg)"] * exploded_bom["Weight Share (%)"]
     
-    # Compute active matrix conversions across execution run parameters
-    theoretical_total_kg = sheet1_bom_level1[sheet1_bom_level1["Tire Size"] == selected_tire_size]["Weight per Tire (kg)"].sum() * cured_qty_today
+    # Aggregate to find total Average Daily Demand (ADD)
+    grouped_demand = exploded_bom.groupby("Raw Material ID").agg({
+        "Ingredient Name": "first",
+        "Material per Tire (kg)": "sum"
+    }).reset_index()
+    grouped_demand["ADD (Tons/Day)"] = (grouped_demand["Material per Tire (kg)"] * cured_plan_volume) / 1000.0
+
+    # Calculate global indicators for summary blocks
+    total_tons_per_day = grouped_demand["ADD (Tons/Day)"].sum()
     
-    col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
-    with col_kpi1:
-        st.metric(label="Target Batch Structural Mass (Kg)", value=f"{round(theoretical_total_kg):,}")
-    with col_kpi2:
-        st.metric(label="Calculated Base Yield", value=f"{cured_qty_today} Pcs")
-    with col_kpi3:
-        st.metric(label="YTD Theoretical vs Actual Divergence", value="-0.42%", delta="Within Safe Quality Boundary")
+    # Process matrix balances loop
+    matrix_table_data = []
+    stockouts_count = 0
+    suggested_pos_count = 0
 
-# ----------------------------------------------------
-# 🧮 BACKEND ENGINE LOGIC: MULTI-TIER EXPLOSION & HORIZONS
-# ----------------------------------------------------
-
-# Step A: Filter Level 1 assembly elements down to selected tire profile
-l1_filtered = sheet1_bom_level1[sheet1_bom_level1["Tire Size"] == selected_tire_size]
-
-# Intersect Level 1 and Level 2 to map structural weights from tire size straight to raw material IDs
-bom_explosion = pd.merge(l1_filtered, sheet2_bom_level2, on="Compound Code")
-
-# Multi-Tier Formula Realization: Material Consumed per Tire = Component Weight * Ingredient Weight Share
-bom_explosion["Exploded RM Demand per Tire (kg)"] = bom_explosion["Weight per Tire (kg)"] * bom_explosion["Weight Share (%)"]
-
-# Group by Raw Material to calculate total Average Daily Demand (ADD)
-agg_demand = bom_explosion.groupby("Raw Material ID").agg({
-    "Ingredient Name": "first",
-    "Exploded RM Demand per Tire (kg)": "sum"
-}).reset_index()
-
-# Scale Average Daily Demand (ADD) against live inputs and sliders
-agg_demand["Average Daily Demand (ADD)"] = agg_demand["Exploded RM Demand per Tire (kg)"] * cured_qty_today * global_demand_factor
-
-# Build the complete ledger table
-mrp_matrix_rows = []
-
-for rm_id, ledger in sheet3_ledger_base.items():
-    # Calculate current ending inventory balance: (Beg Stock + Received) - Consumed
-    ending_stock = (ledger["Beginning Stock"] + ledger["YTD Received"]) - ledger["Live Consumed"]
-    
-    # Extract calculated dynamic demand profile
-    demand_row = agg_demand[agg_demand["Raw Material ID"] == rm_id]
-    
-    if not demand_row.empty:
-        add = demand_row.iloc[0]["Average Daily Demand (ADD)"]
-        material_display_name = demand_row.iloc[0]["Ingredient Name"]
-    else:
-        # Default safety fallbacks for inactive compounds
-        add = 10.0  # Maintain stable background rate if size doesn't use this material
-        material_display_name = ledger["Material Name"]
+    for index, row in grouped_demand.iterrows():
+        rm_id = row["Raw Material ID"]
+        add_tons = row["ADD (Tons/Day)"]
+        add_kg = add_tons * 1000.0
         
-    # Calculate Live Runway Coverage Days
-    running_coverage_days = round(ending_stock / add) if add > 0 else 999
-    
-    # Dynamic Time-Based Forecast Horizon Requirements Calculation
-    d30 = add * 30
-    d60 = add * 60
-    d90 = add * 90
-    d150 = add * 150
-    
-    # Section 4: Awakening Alarm Status Structural Logic Triggers
-    if running_coverage_days <= 30:
-        alarm_status = "<span class='alarm-crit'>❌ CRITICAL</span>"
-    elif running_coverage_days <= 60:
-        alarm_status = "<span class='alarm-warn'>⚠️ WARNING</span>"
-    elif running_coverage_days <= 90:
-        alarm_status = "<span class='alarm-awake'>💡 AWAKENING</span>"
-    else:
-        alarm_status = "<span class='alarm-ok'>✓ SAFE</span>"
+        ledger = sheet3_inventory_ledger.get(rm_id, {"Beginning Stock": 10000.0, "YTD Received": 0.0, "Live Consumed": 0.0})
+        ending_stock_kg = (ledger["Beginning Stock"] + ledger["YTD Received"]) - ledger["Live Consumed"]
         
-    mrp_matrix_rows.append({
-        "Material ID": rm_id,
-        "Material Name": material_display_name,
-        "Current Balance (Kg)": f"{round(ending_stock):,}",
-        "ADD (Kg/D)": f"{round(add):,}",
-        "Runway Days": f"<b>{running_coverage_days} Days</b>",
-        "Alarm Status": alarm_status,
-        "30D Req (Kg)": f"{round(d30):,}",
-        "60D Req (Kg)": f"{round(d60):,}",
-        "90D Req (Kg)": f"{round(d90):,}",
-        "150D Req (Kg)": f"{round(d150):,}"
-    })
+        running_days = round(ending_stock_kg / add_kg) if add_kg > 0 else 999
+        
+        if running_days <= 15:
+            stockouts_count += 1
+            status_badge = "<span class='badge-crit'>❌ CRITICAL</span>"
+        elif running_days <= 30:
+            suggested_pos_count += 1
+            status_badge = "<span class='badge-warn'>⚠️ WARNING</span>"
+        elif running_days <= 60:
+            suggested_pos_count += 1
+            status_badge = "<span class='badge-awake'>💡 AWAKENING</span>"
+        else:
+            status_badge = "<span class='badge-safe'>✓ SAFE</span>"
 
-df_mrp_output = pd.DataFrame(mrp_matrix_rows)
+        matrix_table_data.append({
+            "ID": rm_id,
+            "Ingredient": row["Ingredient Name"],
+            "Current Stock (Kg)": f"{round(ending_stock_kg):,}",
+            "ADD (Kg/Day)": f"{round(add_kg):,}",
+            "Run Rate": f"<b>{running_days} Days</b>",
+            "Alarm Status": status_badge,
+            "30-Day Demand": f"{round(add_kg * 30):,}",
+            "60-Day Demand": f"{round(add_kg * 60):,}",
+            "90-Day Demand": f"{round(add_kg * 90):,}",
+            "150-Day Demand": f"{round(add_kg * 150):,}"
+        })
 
-# --- ZONE B & C: RENDER MRP MATERIAL CONTROL MATRIX ---
-with tab_zone_b:
-    st.markdown(f"### Zone B & C: Live Compound Ingredient Control Matrix")
-    st.caption(f"Currently Exploding Target: **{selected_tire_size}** @ **{cured_qty_today} Units/Day**")
+    # --- ZONE A: RENDER DASHBOARD KPI CARDS ---
+    col_card1, col_card2, col_card3, col_card4 = st.columns(4)
     
-    # Standard format raw HTML execution mapping
-    html_mrp_table = df_mrp_output.to_html(classes="mobile-mrp-table", escape=False, index=False)
-    st.markdown(html_mrp_table, unsafe_allow_html=True)
+    with col_card1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-card-title">Cured Daily Plan Volume</div>
+            <div class="metric-card-value">{cured_plan_volume:,} <span style="font-size:14px; color:#8fa0dd;">Pcs</span></div>
+            <div class="metric-card-subtext">{round(cured_plan_volume * 26):,} Monthly run rate</div>
+            <div class="badge-icon badge-blue">📦</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-st.caption("🔒 Dynamic Multi-Tier Bill of Materials System Active. Theoretical drift balances matched to target inputs.")
+    with col_card2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-card-title">Compounds Compound Mix</div>
+            <div class="metric-card-value">{total_tons_per_day:.2f} <span style="font-size:14px; color:#8fa0dd;">Tons/Day</span></div>
+            <div class="metric-card-subtext">{total_tons_per_day * 26:.2f} Tons/Month expected</div>
+            <div class="badge-icon badge-cyan">🧪</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_card3:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-card-title">Critical Raw Materials</div>
+            <div class="metric-card-value" style="color:#ff4d4f;">{stockouts_count} <span style="font-size:14px; color:#ff4d4f;">Stockouts</span></div>
+            <div class="metric-card-subtext">Below 15 Days safety coverage limit</div>
+            <div class="badge-icon badge-red">⚠️</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_card4:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-card-title">Active Alarms & POs</div>
+            <div class="metric-card-value" style="color:#fadb14;">{suggested_pos_count} <span style="font-size:14px; color:#fadb14;">Suggested POs</span></div>
+            <div class="metric-card-subtext">Below 60 Days run rate limits</div>
+            <div class="badge-icon badge-yellow">🔔</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # --- ZONE B & C: THE INGREDIENT CONTROL MATRIX ---
+    st.markdown("### Curing Production Plan Material Matrix")
+    df_html = pd.DataFrame(matrix_table_data).to_html(classes="classic-mrp-table", escape=False, index=False)
+    st.markdown(df_html, unsafe_allow_html=True)
+
+with tab_bom:
+    st.markdown("#### Level 1 Component Assembly Breakdowns")
+    st.dataframe(sheet1_bom_level1, use_container_width=True)
+
+with tab_rec:
+    st.markdown("#### Level 2 Chemical Formula Percentages")
+    st.dataframe(sheet2_bom_level2, use_container_width=True)
