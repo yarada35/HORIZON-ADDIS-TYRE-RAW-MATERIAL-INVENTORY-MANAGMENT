@@ -55,8 +55,8 @@ def load_and_compile_factory_data():
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
         df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
         
-        # Standardize and clean all column header labels
-        df_cpd_tyre.columns = [str(c).strip() for c in df_cpd_tyre.columns]
+        # FIX: Force clean and strip invisible spaces from all column headers instantly
+        df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.strip()
         
         # Load Operations Planning Ledger
         df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
@@ -98,7 +98,7 @@ with col_header_left:
 
 with col_header_right:
     st.markdown("<br>", unsafe_allow_html=True)
-    lookahead_days = st.number_input("RUNNING DAYS LOOK-AHEAD TARGET:", min_value=1, max_value=180, value=30)
+    lookahead_days = st.number_input("RUNNING DAYS LOOK-A-HEAD TARGET:", min_value=1, max_value=180, value=30)
 
 tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingredients & Recipes", "Warehouse Ledger"])
 
