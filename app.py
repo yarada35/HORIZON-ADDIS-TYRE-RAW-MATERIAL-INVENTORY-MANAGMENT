@@ -44,7 +44,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 📂 AUTOMATED FILE LOADER ENGINE (UPDATED FILENAMES)
+# 📂 AUTOMATED FILE LOADER ENGINE
 # ----------------------------------------------------
 @st.cache_data
 def load_and_compile_factory_data():
@@ -52,7 +52,6 @@ def load_and_compile_factory_data():
     
     # 1. Load Tire Sizes & Compound formulation sheets
     try:
-        # Looking exactly for your master data sheet
         df_cpd_tyre = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
         df_cpd_tyre = df_cpd_tyre.dropna(subset=[df_cpd_tyre.columns[0]])
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
@@ -60,11 +59,11 @@ def load_and_compile_factory_data():
         df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.strip()
     except Exception as e:
         file_missing = True
-        # Safety template fallback to prevent visual breaks if file gets disconnected
         df_cpd_tyre = pd.DataFrame({
             "Compound Type": ["Natural Rubber (SMR-20)", "Polybutadiene (BR 1220)", "Carbon Black N330"],
             "750-16 16PR HT-90": [45.0, 15.0, 35.0],
-            "9.00-20 14PR": [55.0, 20.0, 42.0]
+            "9.00-20 14PR": [55.0, 20.0, 42.0],
+            "8.25-16 HT-40 16PR": [40.0, 12.0, 30.0]
         })
 
     # 2. Load Operations Planning Ledger
@@ -74,7 +73,6 @@ def load_and_compile_factory_data():
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Pull baseline warehouse inventory variables
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
@@ -91,14 +89,17 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning, is_file_missing = load_and_compile_factory_data()
 
-# Cleanly extract all actual tire sizes from the columns
+# ----------------------------------------------------
+# 📊 FIXED ROBUST PROFILE EXTRACTION ENGINE
+# ----------------------------------------------------
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
+
 for col in raw_headers:
-    if col != "Compound Type" and "Unnamed" not in col:
-        clean_name = col.split('.')[0].strip()
-        if clean_name:
-            tire_sizes_clean.append(clean_name)
+    col_str = str(col).strip()
+    if col_str != "Compound Type" and "Unnamed" not in col_str and col_str != "":
+        # Left untouched without splitting by '.' so decimal versions remain complete
+        tire_sizes_clean.append(col_str)
 
 tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
@@ -136,7 +137,7 @@ with tab_dashboard:
 
     scale_ratio = production_plan_pcs / 450.0
 
-    # STABLE MATCH ENGINE TO PREVENT 'NONE' TYPE ERRORS
+    # STABLE MATCH ENGINE TO PREVENT STRIP/NONE ERRORS
     if selected_size and selected_size != "No Data Found":
         matching_cols = [c for c in df_cpd_tyre.columns if c.startswith(str(selected_size))]
         target_col = matching_cols[0] if matching_cols else df_cpd_tyre.columns[1]
