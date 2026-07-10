@@ -55,13 +55,16 @@ def load_and_compile_factory_data():
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
         df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
         
+        # Standardize and clean all column header labels
+        df_cpd_tyre.columns = [str(c).strip() for c in df_cpd_tyre.columns]
+        
         # Load Operations Planning Ledger
         df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
         df_planning = df_planning.dropna(subset=[df_planning.columns[0]])
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Parse numbers cleanly
+        # Parse numeric columns safely
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
@@ -75,13 +78,14 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Cleanly extract pure tire size names from the columns matrix
+# Cleanly extract non-duplicated tire size column identifiers
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 for col in raw_headers:
     if col != "Compound Type" and "Unnamed" not in col and ".1" not in col and ".2" not in col:
-        tire_sizes_clean.append(col.strip())
+        tire_sizes_clean.append(col)
 
+# Keep distinct selections sorted
 tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
 # ----------------------------------------------------
@@ -101,9 +105,8 @@ tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingr
 with tab_dashboard:
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        # Fixed clean selectbox drop list
         selected_size = st.selectbox(
-            label="Select Active Production Tire Profile:", 
+            "Select Active Production Tire Profile:", 
             options=tire_sizes_clean
         )
     with col_input2:
@@ -117,7 +120,6 @@ with tab_dashboard:
     critical_alarms = 0
     warning_alarms = 0
 
-    # Dynamic multiplier ratio based on the target volume input
     scale_ratio = production_plan_pcs / 450.0
 
     for idx, row in df_planning.iterrows():
@@ -126,6 +128,7 @@ with tab_dashboard:
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
+        # Calculate dynamic usage metrics scale safely
         calculated_add = base_add * scale_ratio
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
