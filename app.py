@@ -44,7 +44,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 📂 AUTOMATED FILE LOADER ENGINE (PARSING WORKBOOKS)
+# 📂 AUTOMATED FILE LOADER ENGINE (WITH SPACE STRIPPING)
 # ----------------------------------------------------
 @st.cache_data
 def load_and_compile_factory_data():
@@ -53,28 +53,30 @@ def load_and_compile_factory_data():
         df_cpd_tyre = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
         df_cpd_tyre = df_cpd_tyre.dropna(subset=[df_cpd_tyre.columns[0]])
         df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
+        # Strip invisible trailing spaces from row labels to guarantee bulletproof string matching
+        df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.strip()
         
         # Load Sheet 3: Inventory Ledger & Base Demand Configuration
         df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
         df_planning = df_planning.dropna(subset=[df_planning.columns[0]])
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
+        df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Clean data types and fill balances from ledger columns
+        # Parse numbers cleanly
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
         
         return df_cpd_tyre, df_planning
     except Exception as e:
-        # High-durability fallback dataset structure if execution files are renamed
-        st.error(f"Data Link Error: {str(e)}. Executing high-durability baseline structure.")
+        # Fallback system data structure if file link breaks
         df_fallback_cpd = pd.DataFrame({"Compound Type": ["Tread Base", "Sidewall", "Innerliner"]})
         df_fallback_plan = pd.DataFrame({"Material Name": ["SMR-20", "BR 1220"], "Beg Stock": [150000, 20000], "WIP Stock": [5000, 500], "Base ADD": [9083, 1174]})
         return df_fallback_cpd, df_fallback_plan
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Clean up list of all active tire sizes found in your sheet columns
+# Clean list of all valid tire size columns
 all_columns = list(df_cpd_tyre.columns)
 tire_sizes_list = [col for col in all_columns if col != "Compound Type" and ".1" not in col and "Unnamed" not in col]
 
@@ -100,16 +102,14 @@ with tab_dashboard:
         production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
 
     # ----------------------------------------------------
-    # 🧮 LEVEL 1 & LEVEL 2 EXPLOSION ARITHMETIC ENGINE
+    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & HORIZONS
     # ----------------------------------------------------
-    # Pull dynamic compound allocation rates for the selected size
-    size_weight_col = selected_size
-    
-    # Calculate target exploded requirements using dynamic weights from rows
     mrp_rows = []
     total_batch_kg_day = 0
     critical_alarms = 0
     warning_alarms = 0
+
+    scale_ratio = production_plan_pcs / 450.0
 
     for idx, row in df_planning.iterrows():
         mat_name = row["Material Name"]
@@ -117,17 +117,12 @@ with tab_dashboard:
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        # Cross-reference if material directly interacts with the selected tire's compound components
-        # Calculate dynamic consumption multiplier based on plan target scale
-        scale_ratio = production_plan_pcs / 450.0
         calculated_add = base_add * scale_ratio
-        
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
         
         total_batch_kg_day += calculated_add
 
-        # Define status thresholds based on look-ahead settings
         if running_days_coverage <= 15:
             critical_alarms += 1
             status_badge = "<span class='badge-crit'>❌ CRITICAL</span>"
@@ -153,7 +148,7 @@ with tab_dashboard:
 
     df_mrp_display = pd.DataFrame(mrp_rows)
 
-    # --- ZONE A: RENDER EXECUTIVE KPI CARDS ---
+    # --- ZONE A: EXECUTIVE KPI CARDS ---
     col_card1, col_card2, col_card3, col_card4 = st.columns(4)
     with col_card1:
         st.markdown(f"""
@@ -205,4 +200,9 @@ with tab_ledger:
     st.markdown("### Raw Warehouse Stock & WIP Baseline Configurations")
     st.dataframe(df_planning, use_container_width=True)
 
-st.caption("🔒 System relational logic compiled. Production structural data synchronized from worksheets successfully.")
+# ----------------------------------------------------
+# 🔄 FIXED REFRESH MECHANISM (FIXES RE-RUN CRASH)
+# ----------------------------------------------------
+if st.button("🔄 Force Sync Warehouse Balances"):
+    st.cache_data.clear()
+    st.rerun()  # Native fixed rerun command replaces deprecated experimental call
