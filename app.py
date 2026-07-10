@@ -61,7 +61,7 @@ def load_and_compile_factory_data():
         df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
         df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.strip()
         
-        # Parse numbers cleanly
+        # Parse stock limits and indicators safely
         df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
         df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
         df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
@@ -75,14 +75,13 @@ def load_and_compile_factory_data():
 
 df_cpd_tyre, df_planning = load_and_compile_factory_data()
 
-# Cleanly extract non-duplicated pure tire size columns
+# Cleanly extract pure tire size names from data layout matrix
 raw_headers = list(df_cpd_tyre.columns)
 tire_sizes_clean = []
 for col in raw_headers:
     if col != "Compound Type" and "Unnamed" not in col and ".1" not in col and ".2" not in col:
         tire_sizes_clean.append(col.strip())
 
-# Remove any duplicates to keep selectbox input unique
 tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
 
 # ----------------------------------------------------
@@ -102,23 +101,22 @@ tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingr
 with tab_dashboard:
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        # Fixed clean selectbox dropdown
         selected_size = st.selectbox(
             "Select Active Production Tire Profile:", 
-            options=tire_sizes_clean,
-            help="Dynamically extracts components recipe scales from spreadsheet columns."
+            options=tire_sizes_clean
         )
     with col_input2:
         production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
 
     # ----------------------------------------------------
-    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & BALANCES
+    # 🧮 LOGIC ENGINE FOR EXPLOSIONS & BALANCES (FIXED KEY)
     # ----------------------------------------------------
     mrp_rows = []
     total_batch_kg_day = 0
     critical_alarms = 0
     warning_alarms = 0
 
+    # Explicit calculation scalar mapping cleanly to chosen options matrix
     scale_ratio = production_plan_pcs / 450.0
 
     for idx, row in df_planning.iterrows():
@@ -127,7 +125,7 @@ with tab_dashboard:
         wip_stock = row["WIP Stock"]
         base_add = row["Base ADD"]
         
-        # Scaled Consumption Engine 
+        # Calculate dynamic usage metrics scale
         calculated_add = base_add * scale_ratio
         total_current_stock = beg_stock + wip_stock
         running_days_coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
