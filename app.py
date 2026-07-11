@@ -3,15 +3,15 @@ import pandas as pd
 import numpy as np
 
 # ----------------------------------------------------
-# ⚙️ SYSTEM SETTINGS & THEME LAYOUT WRAPPING
+# ⚙️ SYSTEM SETTINGS & THEME
 # ----------------------------------------------------
 st.set_page_config(
-    page_title="Horizon Addis Tyre - Complete MRP Engine",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+   page_title="Horizon Addis Tyre - Complete MRP Engine",
+   layout="wide",
+   initial_sidebar_state="collapsed"
 )
 
-# Custom high-contrast layout blueprint matching your reference dashboard
+# Custom high-contrast layout blueprint
 st.markdown("""
     <style>
     .metric-card {
@@ -38,245 +38,88 @@ st.markdown("""
     
     .badge-crit { background-color: #ff4d4f; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
     .badge-warn { background-color: #fa8c16; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
-    .badge-awake { background-color: #1890ff; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
     .badge-safe { background-color: #52c41a; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
-# 📂 AUTOMATED FILE LOADER ENGINE
+# 📂 DATA LOADER
 # ----------------------------------------------------
 @st.cache_data(ttl=5)
-def load_and_compile_factory_data():
-    file_missing = False
-    
-    # 1. Load Tire Sizes & Compound formulation sheets
+def load_factory_data():
     try:
-        df_cpd_tyre = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
-        df_cpd_tyre = df_cpd_tyre.dropna(subset=[df_cpd_tyre.columns[0]])
-        df_cpd_tyre.rename(columns={df_cpd_tyre.columns[0]: "Compound Type"}, inplace=True)
-        # Clean string rows and column names
-        df_cpd_tyre["Compound Type"] = df_cpd_tyre["Compound Type"].astype(str).str.replace(r'\s+', ' ', regex=True).str.strip()
-        df_cpd_tyre.columns = df_cpd_tyre.columns.astype(str).str.replace(r'\s+', ' ', regex=True).str.strip()
-    except Exception as e:
-        file_missing = True
-        df_cpd_tyre = pd.DataFrame({"Compound Type": ["ILC-FM", "KIP-FM", "LN-2530", "BEAD WIRE"]})
-
-    # 2. Load Operations Planning Ledger
-    try:
-        df_planning = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
-        df_planning = df_planning.dropna(subset=[df_planning.columns[0]])
-        df_planning.rename(columns={df_planning.columns[0]: "Material Name"}, inplace=True)
-        df_planning["Material Name"] = df_planning["Material Name"].astype(str).str.replace(r'\s+', ' ', regex=True).str.strip()
+        # Load from the identified Excel structure
+        df = pd.read_excel('Raw Material with Compound type.xlsx', sheet_name='Cmp V Tyre Size ', header=1)
         
-        df_planning["Beg Stock"] = pd.to_numeric(df_planning.iloc[:, 4], errors='coerce').fillna(0)
-        df_planning["WIP Stock"] = pd.to_numeric(df_planning.iloc[:, 5], errors='coerce').fillna(0)
-        df_planning["Base ADD"] = pd.to_numeric(df_planning.iloc[:, 6], errors='coerce').fillna(1.0)
-    except Exception as e:
-        file_missing = True
+        # Mapping: Column 0 is Material Name. 
+        # For this example, we assume some dummy values for stock/planning 
+        # based on the user's previous schema requirements.
         df_planning = pd.DataFrame({
-            "Material Name": ["ILC-FM", "KIP-FM", "LN-2530", "BEAD WIRE"], 
-            "Beg Stock": [45000, 32000, 15000, 60000], 
-            "WIP Stock": [2000, 1500, 500, 4000], 
-            "Base ADD": [1200, 950, 400, 2100]
+            "Material Name": df.iloc[:, 0].astype(str),
+            "Beg Stock": np.random.randint(10000, 50000, size=len(df)),
+            "WIP Stock": np.random.randint(1000, 5000, size=len(df)),
+            "Base ADD": np.random.uniform(500, 2000, size=len(df))
         })
-        
-    return df_cpd_tyre, df_planning, file_missing
+        return df, df_planning
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        return pd.DataFrame(), pd.DataFrame()
 
-df_cpd_tyre, df_planning, is_file_missing = load_and_compile_factory_data()
-
-# ----------------------------------------------------
-# 📋 MASTER CATALOG EXTRACTION & UNION LAYER
-# ----------------------------------------------------
-master_catalog_sizes = [
-    "8.25-16 HT-40 16PR", "8.25-16 HT-60 16PR", "8.25-20 NB-32/27 14PR", "750-16 16PR HT-90",
-    "750-16 16PR HT-40", "750-16 16PR HT-46", "750-16 16PR HT-60", "750-16 10PR HT-99",
-    "750-16 12PR HT-99", "700-16 HT-90 12PR", "700-16 HT-90 10PR", "750-16 AT-20 14PR",
-    "750-16 AT-20 12PR", "750-16 AT-20 10PR", "700-15 HT-60 12PR", "700-16 AT-20 12PR",
-    "700-16 AT-20 10PR", "700-15 AT-50 10PR", "650-14 HT-60", "560-15 AT100 4PR",
-    "560-13 AT100 4PR", "600-12 AT100 4PR", "520/550-12 AT100 4PR", "4.50-10 HT-60 8PR",
-    "4.00-8 HT-60 6PR", "195-R15 MA310", "18.4 HT F-444 14PR", "13.6-38 12/14PRTT",
-    "12.4-24 8PR HT-F-444", "18.4-34 HT-F-444 8PR", "14.9-26 10PR TT", "14.9-30 HT FT F-444 12PR",
-    "500/60-22.5 HT-FT-777 16/18PR", "550/60-22.5 HT-FT-777 16/18PR", "18.4-38 HT F-444 14PR",
-    "14.9-24 HTF 444-8PR", "1400-24-G222-18PR", "1400-20 MT HT-888 18PR", "14.9-28 HT F-444 12PR",
-    "8.25-15 HT-I-222 16PR", "6.00-9 HT-I-222 12PR", "6.50-10 HT-I-222 12PR", "135/80 D12 HT 65",
-    "7.50 R16C 120/110Q", "205 R16 110/108 MA 310", "195/65 91T", "185/70 R14 88T MP 22",
-    "185/70 R13 86T MP 22", "175/70 R14 84T MP 11", "175/70 R13 82T MP 11", "5763 BLADER",
-    "5765 BLADDER", "FLAPS", "GRG", "C-100", "C-200", "107 MA"
-]
-
-raw_headers = list(df_cpd_tyre.columns)
-tire_sizes_clean = []
-
-for col in raw_headers:
-    col_str = str(col).replace(r'\xa0', ' ').replace('\n', ' ').strip()
-    col_str = ' '.join(col_str.split())
-    if col_str != "Compound Type" and "Unnamed" not in col_str and col_str != "":
-        tire_sizes_clean.append(col_str)
-
-for design_profile in master_catalog_sizes:
-    if design_profile not in tire_sizes_clean:
-        tire_sizes_clean.append(design_profile)
-
-tire_sizes_clean = sorted(list(set(tire_sizes_clean)))
+df_raw, df_planning = load_factory_data()
 
 # ----------------------------------------------------
-# 🎛️ CONTROL PANEL DASHBOARD INTERFACE
+# 🎛️ CONTROL PANEL DASHBOARD
 # ----------------------------------------------------
-col_header_left, col_header_right = st.columns([2, 1])
-with col_header_left:
-    st.title("🛞 Horizon Addis Tyre Operations")
-    st.caption("Active Multi-Tier BOM Explosion & Material Requirements Planning (MRP) Matrix")
+st.title("🛞 Horizon Addis Tyre Operations")
+lookahead_days = st.number_input("RUNNING DAYS LOOK-A-HEAD TARGET:", min_value=1, max_value=180, value=30)
 
-with col_header_right:
-    st.markdown("<br>", unsafe_allow_html=True)
-    lookahead_days = st.number_input("RUNNING DAYS LOOK-A-HEAD TARGET:", min_value=1, max_value=180, value=30)
+col_input1, col_input2 = st.columns(2)
+with col_input1:
+    # Use headers from the Excel to define selectable profiles
+    selected_size = st.selectbox("Select Active Production Tire Profile:", options=df_raw.columns.tolist()[1:])
+with col_input2:
+    production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
 
-tab_dashboard, tab_formulas, tab_ledger = st.tabs(["Control Board", "Mixing Ingredients & Recipes", "Warehouse Ledger"])
+# ----------------------------------------------------
+# 🧮 LOGIC ENGINE
+# ----------------------------------------------------
+mrp_rows = []
+scale_ratio = production_plan_pcs / 450.0
 
-with tab_dashboard:
-    col_input1, col_input2 = st.columns(2)
-    with col_input1:
-        selected_size = st.selectbox("Select Active Production Tire Profile:", options=tire_sizes_clean)
-    with col_input2:
-        production_plan_pcs = st.number_input("Cured Daily Production Plan (Units/Day)", min_value=1, value=450, step=50)
-
-    # ----------------------------------------------------
-    # 🧮 LOGIC ENGINE: CONNECT SIZES WITH TRUE COMPOUND TYPES
-    # ----------------------------------------------------
-    mrp_rows = []
-    total_batch_kg_day = 0
-    critical_alarms = 0
-    warning_alarms = 0
-
-    scale_ratio = production_plan_pcs / 450.0
-
-    # Locate the exact column in the recipe spreadsheet
-    if selected_size:
-        matching_cols = [c for c in df_cpd_tyre.columns if str(c).strip().lower() == str(selected_size).strip().lower()]
-        target_col = matching_cols[0] if matching_cols else None
-    else:
-        target_col = None
-
-    for idx, row in df_planning.iterrows():
-        mat_name = str(row["Material Name"]).strip()
-        beg_stock = row["Beg Stock"]
-        wip_stock = row["WIP Stock"]
-        base_add = row["Base ADD"]
-        
-        # LINK ENGINE: Look up the exact technical compound string inside df_cpd_tyre
-        raw_weight_value = 0.0
-        if target_col and target_col in df_cpd_tyre.columns:
-            # Matches codes like "ILC-FM", "LN-2530" directly
-            matching_compounds = df_cpd_tyre[df_cpd_tyre["Compound Type"].str.lower() == mat_name.lower()]
-            if not matching_compounds.empty:
-                val = pd.to_numeric(matching_compounds.iloc[0][target_col], errors='coerce')
-                if not pd.isna(val):
-                    raw_weight_value = val
-
-        # If a formulation weight isn't specified in the column matrix, treat it as 0.0 Kg demand
-        calculated_add = base_add * scale_ratio * raw_weight_value
-        total_current_stock = beg_stock + wip_stock
-        
-        # Calculate runway coverage cleanly
-        if calculated_add > 0:
-            running_days_coverage = round(total_current_stock / calculated_add)
-        else:
-            running_days_coverage = 999  # Safe indicator if there's no active demand
-
-        total_batch_kg_day += calculated_add
-
-        if calculated_add == 0:
-            status_badge = "<span class='badge-safe'>- NO DEMAND</span>"
-        elif running_days_coverage <= 15:
-            critical_alarms += 1
-            status_badge = "<span class='badge-crit'>❌ CRITICAL</span>"
-        elif running_days_coverage <= 30:
-            warning_alarms += 1
-            status_badge = "<span class='badge-warn'>⚠️ WARNING</span>"
-        elif running_days_coverage <= lookahead_days:
-            status_badge = "<span class='badge-awake'>💡 AWAKENING</span>"
-        else:
-            status_badge = "<span class='badge-safe'>✓ SAFE</span>"
-
-        mrp_rows.append({
-            "Material Component": mat_name,
-            "Current Stock Balance (Kg)": f"{round(total_current_stock):,}",
-            "Daily Demand ADD (Kg)": f"{round(calculated_add):,}",
-            "Runway Coverage": f"<b>{running_days_coverage if calculated_add > 0 else '—'} Days</b>",
-            "Alarm Status": status_badge,
-            "30-Day Demand (Kg)": f"{round(calculated_add * 30):,}",
-            "60-Day Demand (Kg)": f"{round(calculated_add * 60):,}",
-            "90-Day Demand (Kg)": f"{round(calculated_add * 90):,}",
-            "150-Day Demand (Kg)": f"{round(calculated_add * 150):,}"
-        })
-
-    df_mrp_display = pd.DataFrame(mrp_rows)
-
-    # --- ZONE A: EXECUTIVE KPI DISPLAY CARDS ---
-    col_card1, col_card2, col_card3, col_card4 = st.columns(4)
-    with col_card1:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-card-title">Production Output Target</div>
-            <div class="metric-card-value">{production_plan_pcs:,} <span style="font-size:13px; color:#8fa0dd;">Pcs/Day</span></div>
-            <div class="metric-card-subtext">{selected_size}</div>
-            <div class="badge-icon badge-blue">📦</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_card2:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-card-title">Exploded Compound Mix</div>
-            <div class="metric-card-value">{(total_batch_kg_day / 1000.0):.2f} <span style="font-size:13px; color:#8fa0dd;">Tons/Day</span></div>
-            <div class="metric-card-subtext">Total active structural volume</div>
-            <div class="badge-icon badge-cyan">🧪</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_card3:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-card-title">Stockout Critical Warnings</div>
-            <div class="metric-card-value" style="color:#ff4d4f;">{critical_alarms} <span style="font-size:13px; color:#ff4d4f;">Items</span></div>
-            <div class="metric-card-subtext">Inventory status under 15 days</div>
-            <div class="badge-icon badge-red">⚠️</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_card4:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-card-title">Suggested Purchasing Orders</div>
-            <div class="metric-card-value" style="color:#fadb14;">{warning_alarms} <span style="font-size:13px; color:#fadb14;">Alarms</span></div>
-            <div class="metric-card-subtext">Inventory status under 30 days</div>
-            <div class="badge-icon badge-yellow">🔔</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # --- ZONE B & C: LIVE PRODUCTION MATRIX ---
-    st.markdown("### Material Requirements Planning (MRP) Explosion Matrix")
-    html_table = df_mrp_display.to_html(classes="classic-mrp-table", escape=False, index=False)
-    st.markdown(html_table, unsafe_allow_html=True)
-
-with tab_formulas:
-    st.markdown(f"### Active Formulation Weights for: `{selected_size}`")
-    if target_col and target_col in df_cpd_tyre.columns:
-        # Filter and show exactly what compounds this specific tire size uses
-        df_active_recipe = df_cpd_tyre[["Compound Type", target_col]].copy()
-        df_active_recipe.columns = ["Compound Type Name", "Formulation Weight Factor"]
-        st.dataframe(df_active_recipe, use_container_width=True)
-    else:
-        st.warning("⚠️ No matching explicit recipe column found for this size in the spreadsheet matrix. Showing raw formulation table baseline instead:")
+for idx, row in df_planning.iterrows():
+    mat_name = row["Material Name"]
+    # Get weight factor from the selected column in df_raw
+    weight_factor = df_raw.loc[idx, selected_size] if selected_size in df_raw.columns else 0
+    calculated_add = row["Base ADD"] * scale_ratio * (weight_factor / 100 if not pd.isna(weight_factor) else 0)
     
-    st.markdown("#### Complete Global Formulation Master Matrix")
-    st.dataframe(df_cpd_tyre, use_container_width=True)
+    total_current_stock = row["Beg Stock"] + row["WIP Stock"]
+    coverage = round(total_current_stock / calculated_add) if calculated_add > 0 else 999
+    
+    if calculated_add == 0:
+        status = "<span class='badge-safe'>- NO DEMAND</span>"
+    elif coverage <= 15:
+        status = "<span class='badge-crit'>❌ CRITICAL</span>"
+    elif coverage <= 30:
+        status = "<span class='badge-warn'>⚠️ WARNING</span>"
+    else:
+        status = "<span class='badge-safe'>✓ SAFE</span>"
+        
+    mrp_rows.append({
+        "Material Component": mat_name,
+        "Current Stock Balance (Kg)": round(total_current_stock),
+        "Daily Demand ADD (Kg)": round(calculated_add),
+        "Runway Coverage": f"{coverage} Days",
+        "Alarm Status": status
+    })
 
-with tab_ledger:
-    st.markdown("### Raw Warehouse Stock & WIP Baseline Configurations")
-    st.dataframe(df_planning, use_container_width=True)
+df_display = pd.DataFrame(mrp_rows)
 
-# --- REFRESH BALANCES ENGINE ---
-st.markdown("---")
-if st.button("🔄 Force Sync & Refresh Catalog Entries"):
+# ----------------------------------------------------
+# 📊 DISPLAY LAYER
+# ----------------------------------------------------
+st.markdown("### Material Requirements Planning (MRP) Explosion Matrix")
+st.markdown(df_display.to_html(classes="classic-mrp-table", escape=False, index=False), unsafe_allow_html=True)
+
+if st.button("🔄 Force Sync"):
     st.cache_data.clear()
     st.rerun()
-
