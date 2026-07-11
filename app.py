@@ -27,10 +27,13 @@ st.markdown("""
 # ----------------------------------------------------
 @st.cache_data(ttl=5)
 def load_all_factory_data():
-    # Use the directory where app.py resides to find files
-    base_dir = os.path.dirname(__file__)
+    # Use the current working directory
+    base_dir = os.getcwd()
     
     try:
+        # Debugging: show what the app sees
+        # st.write(f"Files in dir: {os.listdir(base_dir)}")
+        
         # 1. Compound Matrix
         path_cpd = os.path.join(base_dir, "Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
         df_cpd = pd.read_csv(path_cpd)
@@ -70,7 +73,7 @@ if df_cpd is not None and df_raw is not None and df_ledger is not None:
         beg_stock = stock_info.iloc[0, 4] if not stock_info.empty else 0
         wip_stock = stock_info.iloc[0, 5] if not stock_info.empty else 0
         
-        # Placeholder for demand calculation based on your compound matrix logic
+        # Placeholder for demand calculation
         calc_demand = (production_plan_pcs / 450.0) * 1.0 
         
         mrp_rows.append({
