@@ -1,39 +1,44 @@
 import streamlit as st
 import pandas as pd
-import os
+import numpy as np
 
-st.set_page_config(page_title="Horizon Addis Tyre - MRP Engine", layout="wide")
+# Page config for better rendering
+st.set_page_config(page_title="Horizon Addis Tyre Dashboard", layout="wide")
 
-@st.cache_data
-def load_data():
-    file_path = 'Tyre Size and Compound .xlsx - Total cpd V raw material.csv'
-    if not os.path.exists(file_path):
-        return None, os.listdir('.')
-    df = pd.read_csv(file_path)
-    return df, os.listdir('.')
+st.title("HORIZON ADDIS TYRE: Production Control Panel")
 
-df_raw, file_list = load_data()
+# 1. Setup Mock Data (Replace with your actual CSV/Database load)
+def get_data():
+    # Creating a MultiIndex to match the "Unit Weight / Total Weight" headers
+    cols = pd.MultiIndex.from_tuples([
+        ('Tire Size', 'Specification'),
+        ('Compound (KG)', 'Unit Weight'),
+        ('Compound (KG)', 'Total Weight')
+    ])
+    data = [
+        ['750-16 12PR HT-99', 4.5, 900],
+        ['700-16 HT-90 12PR', 4.2, 840],
+        ['900-20 16PR HT-99', 8.1, 1620]
+    ]
+    return pd.DataFrame(data, columns=cols)
 
-st.markdown("<h1>Tire Curing & Cpd Operations</h1>", unsafe_allow_html=True)
+df = get_data()
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Control Board", "Feed Size", "Feed Recipe", "Tire BOM Explorer", "Formulary"])
+# 2. Sidebar for Navigation/Filtering
+st.sidebar.header("Dashboard Controls")
+selected_size = st.sidebar.multiselect("Filter by Tire Size", options=df[('Tire Size', 'Specification')].unique())
 
-if df_raw is None:
-    st.error("Target file not found.")
-else:
-    # Identify column names dynamically
-    col_names = df_raw.columns.tolist()
-    first_col = col_names[0] # Usually the Material Name column
+# 3. Filtering Logic
+display_df = df
+if selected_size:
+    display_df = df[df[('Tire Size', 'Specification')].isin(selected_size)]
 
-    with tab1:
-        selected_size = st.selectbox("Select Active Production Tire Profile:", options=col_names[1:])
-        st.dataframe(df_raw.head(20), use_container_width=True)
+# 4. Rendering the Table
+st.subheader("Compound Weight Distribution")
+# use_container_width ensures it behaves well in mobile browsers like Acode
+st.dataframe(display_df, use_container_width=True)
 
-    with tab4:
-        st.markdown("### Weight Composition Profile")
-        # Use dynamic names instead of hardcoded 'Unnamed: 0'
-        plot_data = df_raw[[first_col, selected_size]].set_index(first_col)
-        st.bar_chart(plot_data)
-
-    with tab5:
-        st.dataframe(df_raw, use_container_width=True)
+# 5. Placeholder for additional analytics (as per your survey application experience)
+st.write("---")
+if st.button("Generate Quality Assurance Report"):
+    st.success("Report generation initiated for Horizon Addis Tyre.")
