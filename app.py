@@ -15,10 +15,6 @@ st.set_page_config(
 st.markdown("""
     <style>
     .metric-card { background-color: #111625; border: 1px solid #1e2640; border-radius: 8px; padding: 16px; margin-bottom: 15px; position: relative; }
-    .metric-card-title { color: #8fa0dd; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-    .metric-card-value { color: #ffffff; font-size: 24px; font-weight: bold; margin-top: 5px; margin-bottom: 2px; }
-    .metric-card-subtext { color: #536394; font-size: 11px; }
-    .badge-icon { position: absolute; right: 16px; top: 24px; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
     .badge-safe { background-color: #52c41a; color: #ffffff; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
     .classic-mrp-table { width: 100%; border-collapse: collapse; font-size: 12px; color: #e2e8f0; margin-top: 10px; }
     .classic-mrp-table th { background-color: #171e31 !important; color: #8fa0dd !important; padding: 10px 8px; font-weight: bold; text-align: left; border-bottom: 2px solid #222f4d; text-transform: uppercase; font-size: 11px; }
@@ -31,18 +27,22 @@ st.markdown("""
 # ----------------------------------------------------
 @st.cache_data(ttl=5)
 def load_all_factory_data():
+    # Use the directory where app.py resides to find files
+    base_dir = os.path.dirname(__file__)
+    
     try:
         # 1. Compound Matrix
-        df_cpd = pd.read_csv("Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
+        path_cpd = os.path.join(base_dir, "Tyre Size and Compound .xlsx - Total cpd V raw material.csv")
+        df_cpd = pd.read_csv(path_cpd)
         df_cpd.rename(columns={df_cpd.columns[0]: "Compound Type"}, inplace=True)
         
         # 2. Comprehensive Raw Materials (The New Source)
-        file_path_raw = 'Raw Material with Compound type.xlsx'
-        # Assumes the sheet name 'Cmp V Tyre Size ' based on previous context
-        df_raw = pd.read_excel(file_path_raw, sheet_name='Cmp V Tyre Size ')
+        path_raw = os.path.join(base_dir, 'Raw Material with Compound type.xlsx')
+        df_raw = pd.read_excel(path_raw, sheet_name='Cmp V Tyre Size ')
         
         # 3. Ledger (for stock levels)
-        df_ledger = pd.read_csv("Planning Days.xlsx - Sheet1.csv")
+        path_ledger = os.path.join(base_dir, "Planning Days.xlsx - Sheet1.csv")
+        df_ledger = pd.read_csv(path_ledger)
         df_ledger.rename(columns={df_ledger.columns[0]: "Material Name"}, inplace=True)
         
         return df_cpd, df_raw, df_ledger
@@ -61,11 +61,11 @@ if df_cpd is not None and df_raw is not None and df_ledger is not None:
 
     # 💡 MRP GENERATION LOGIC
     mrp_rows = []
-    # Extract unique materials from the comprehensive list
+    # Assumes 'Type of Raw Materials' is the header in the Excel file
     all_materials = [m for m in df_raw['Type of Raw Materials'].dropna().unique() if m != 'TOTAL']
 
     for mat in all_materials:
-        # Lookup stock from ledger
+        # Lookup stock from ledger (Case-insensitive match)
         stock_info = df_ledger[df_ledger["Material Name"].str.strip().str.lower() == str(mat).strip().lower()]
         beg_stock = stock_info.iloc[0, 4] if not stock_info.empty else 0
         wip_stock = stock_info.iloc[0, 5] if not stock_info.empty else 0
