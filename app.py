@@ -3,10 +3,10 @@ import pandas as pd
 import mysql.connector
 import datetime
 
-# 1. PAGE CONFIGURATION
+# 1=> #PAGE CONFIGURATION
 st.set_page_config(page_title="HORIZON ADDIS TYRE System", layout="wide")
 
-# 2. SESSION AUTHENTICATION
+# 2=> Session and Authentication
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
@@ -24,14 +24,15 @@ def login_gate():
 if not st.session_state.logged_in:
     login_gate()
 
-# 3. DIRECT DATABASE CONNECTION
+# 3=> DATA BASE CONNECTION
 def get_db_connection():
+    # REPLACE THESE PLACEHOLDERS WITH YOUR ACTUAL TIDB CLOUD CREDENTIALS
     return mysql.connector.connect(
-        host=st.secrets["connections"]["tidb"]["host"],
-        port=st.secrets["connections"]["tidb"]["port"],
-        user=st.secrets["connections"]["tidb"]["user"],
-        password=st.secrets["connections"]["tidb"]["password"],
-        database=st.secrets["connections"]["tidb"]["database"]
+        host="ENTER_YOUR_ACTUAL_HOST_ADDRESS_HERE", 
+        port=4000,
+        user="ENTER_YOUR_ACTUAL_USER_HERE",
+        password="ENTER_YOUR_ACTUAL_PASSWORD_HERE",
+        database="horizon_addis_tyre"
     )
 
 @st.cache_data(ttl=600)
@@ -42,7 +43,7 @@ def get_bom_data():
     conn.close()
     return df.set_index('tire_size')
 
-# 4. DASHBOARD INTERFACE
+# 4=> MAIN APP INTERANCE AND MYSWL PYTJON
 st.title("🏭 HORIZON ADDIS TYRE Production Dashboard")
 if st.sidebar.button("Logout"):
     st.session_state.logged_in = False
@@ -72,4 +73,4 @@ try:
         st.table(components[components > 0])
 
 except Exception as e:
-    st.error(f"Error: {e}")
+    st.error(f"Connection Error: {e}")
