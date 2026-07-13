@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# 1. BOM Data Configuration
+# 1. BOM DATA CONFIGURATION
 BOM_DATA = pd.DataFrame.from_dict({
     "8.25-16 HT-40 16PR": {"ILC-FM": 1.447, "KIP-FM": 3.872, "LN-6647": 2.303, "073-FM": 0.389, "BEAD WIRE": 1.091, "5493-FM": 0.500, "5447-FM": 0.401, "LN-2530": 0.152, "BOP-FM": 1.883, "LN-6641": 0.732, "BRC-FM": 1.223, "1227-FM": 0.259, "NN-0111": 0.066, "TCC-FM": 0.374, "TSW1-FM": 2.100},
     "8.25-16 HT-60 16PR": {"ILC-FM": 1.287, "KIP-FM": 3.451, "LN-6647": 2.053, "073-FM": 0.339, "BEAD WIRE": 0.951, "5493-FM": 0.292, "5447-FM": 0.307, "LN-2530": 0.133, "BOP-FM": 1.802, "LN-6641": 0.645, "BRC-FM": 0.966, "1227-FM": 0.350, "NN-0111": 0.089, "T1R-FM": 12.577, "TCC-FM": 0.483},
@@ -61,9 +61,7 @@ BOM_DATA = pd.DataFrame.from_dict({
     "C-200": {"C-200-FM": 3.780},
     "107 MA": {"107-MA-FM": 80.601}
 }, orient='index').fillna(0)
-# Relationships: Compound -> Mixing Ingredients
-import streamlit as st
-import pandas as pd
+
 RECIPE_DATA = {
     "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "Zinc Oxide": 0.0113, "Sulfur": 0.0181, "SMR-10 (sir-10)": 0.1394},
     "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "Zinc Oxide": 0.0210, "Sulfur": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
@@ -100,17 +98,23 @@ RECIPE_DATA = {
     "940 dtex x 2 / 80": {"Bead Wire / Bide Wire (Steel)": 1.00}
 }
 
-# 2. UI DESIGN
+# UI DESIGN
 st.set_page_config(page_title="Horizon Addis Tyre Dashboard", layout="wide")
 st.title("HORIZON ADDIS TYRE: Production Dashboard")
 
 tab1, tab2 = st.tabs(["Product Bill of Materials", "Compound Mixing Recipes"])
 
 with tab1:
-    st.subheader("Product-to-Compound Relationship")
-    selected_prod = st.selectbox("Select Tyre Size", df_bom.index)
-    compounds = df_bom.loc[selected_prod]
-    st.table(compounds[compounds > 0])
+    st.subheader("Raw Materials for Product")
+    selected_product = st.selectbox("Select Product", BOM_DATA.index)
+    
+    material_requirements = BOM_DATA.loc[selected_product]
+    material_requirements = material_requirements[material_requirements > 0]
+    
+    st.table(material_requirements.reset_index().rename(columns={"index": "Material", selected_product: "Quantity (KG)"}))
+    
+    if st.button("Generate Production Report"):
+        st.success("Report generated for operational review.")
 
 with tab2:
     st.subheader("Compound-to-Ingredient Relationship")
@@ -118,17 +122,8 @@ with tab2:
     recipe = RECIPE_DATA.get(selected_comp, {})
     
     st.write(f"### Mixing Formula: {selected_comp}")
+    
     for ing, val in recipe.items():
         col1, col2 = st.columns([3, 1])
         col1.write(f"└─ **{ing}**")
-        col2.code(f"{val:.4f} KG")selected_product = st.selectbox("Select Product", BOM_DATA.index)
-
-# 3. Calculation Display
-st.subheader(f"Raw Materials for {selected_product}")
-material_requirements = BOM_DATA.loc[selected_product]
-material_requirements = material_requirements[material_requirements > 0]
-
-st.table(material_requirements.reset_index().rename(columns={"index": "Material", selected_product: "Quantity (KG)"}))
-
-if st.button("Generate Production Report"):
-    st.success("Report generated for operational review.")
+        col2.code(f"{val:.4f} KG")
