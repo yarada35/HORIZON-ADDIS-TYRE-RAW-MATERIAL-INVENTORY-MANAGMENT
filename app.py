@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import mysql.connector
 
 # 1=> PAGE CONFIGURATION
 st.set_page_config(page_title="HORIZON ADDIS TYRE System", layout="wide")
@@ -32,41 +31,28 @@ TIRE_BOM_DATA = {
 }
 DYNAMIC_TREAD_SIZES = list(TIRE_BOM_DATA.keys())
 
-# 3=> AUTHENTICATION
-if 'logged_in' not in st.session_state: st.session_state.logged_in = False
-if not st.session_state.logged_in:
-    st.title("🏭 HORIZON ADDIS TYRE: Secure Access")
-    if st.sidebar.text_input("Shift Authorization Code", type="password") == "HORIZON2026":
-        if st.sidebar.button("Login"):
-            st.session_state.logged_in = True
-            st.rerun()
-    st.stop()
-
-# 4=> DATABASE CONNECTION
-def get_db_connection():
-    return mysql.connector.connect(
-        host="ENTER_YOUR_ACTUAL_HOST_HERE", 
-        port=4000,
-        user="ENTER_YOUR_ACTUAL_USERNAME_HERE",
-        password="ENTER_YOUR_ACTUAL_PASSWORD_HERE",
-        database="horizon_addis_tyre"
-    )
-
-# 5=> MAIN APP INTERFACE
+# 3=> MAIN APP INTERFACE
 st.title("🏭 HORIZON ADDIS TYRE Production Planner")
-if st.sidebar.button("Logout"):
-    st.session_state.logged_in = False
-    st.rerun()
 
-selected_sizes = st.multiselect("Select Tire Sizes", DYNAMIC_TREAD_SIZES)
-production_plan = {size: st.number_input(f"Units for {size}", min_value=0) for size in selected_sizes}
+# Selection and Inputs
+selected_sizes = st.multiselect("Select Tire Sizes to Schedule", DYNAMIC_TREAD_SIZES)
+production_plan = {size: st.number_input(f"Units for {size}", min_value=0, value=0) for size in selected_sizes}
 
-if st.button("Calculate Materials"):
+# 4=> CALCULATION LOGIC (THE BUTTON)
+if st.button("Calculate Total Materials"):
     total_materials = {}
-    for size, qty in production_plan.items():
-        if qty > 0:
-            for comp, amt in TIRE_BOM_DATA.get(size, {}).items():
-                total_materials[comp] = total_materials.get(comp, 0) + (amt * qty)
     
-    st.subheader("Total Material Requirements")
-    st.dataframe(pd.DataFrame.from_dict(total_materials, orient='index', columns=['Total Amount']))
+    # Aggregation loop
+    for size, quantity in production_plan.items():
+        if quantity > 0:
+            components = TIRE_BOM_DATA.get(size, {})
+            for comp, amount in components.items():
+                total_materials[comp] = total_materials.get(comp, 0) + (amount * quantity)
+            
+    # Display results
+    if total_materials:
+        st.subheader("Total Material Requirements")
+        df_results = pd.DataFrame.from_dict(total_materials, orient='index', columns=['Total Required'])
+        st.dataframe(df_results)
+    else:
+        st.write("Please enter production units to see results.")
