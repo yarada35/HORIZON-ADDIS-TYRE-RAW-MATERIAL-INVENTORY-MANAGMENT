@@ -119,7 +119,8 @@ with tab2:
     for ing, val in recipe.items():
         col1, col2 = st.columns([3, 1])
         col1.write(f"└─ **{ing}**")
-        col2.code(f"{val:.4f} KG")st.title("HORIZON ADDIS TYRE: Production BOM Dashboard")
+        col2.code(f"{val:.4f} KG")
+        st.title("HORIZON ADDIS TYRE: Production BOM Dashboard")
 
 selected_product = st.selectbox("Select Product", BOM_DATA.index)
 
