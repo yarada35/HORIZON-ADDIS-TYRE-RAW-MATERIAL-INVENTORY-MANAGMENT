@@ -1,11 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-# 1=> PAGE CONFIGURATION
-st.set_page_config(page_title="HORIZON ADDIS TYRE System", layout="wide")
-
-# 2=> DATA DEFINITION
-TIRE_BOM_DATA = {
+# 1. BOM Data Configuration
+BOM_DATA = pd.DataFrame.from_dict({
     "8.25-16 HT-40 16PR": {"ILC-FM": 1.447, "KIP-FM": 3.872, "LN-6647": 2.303, "073-FM": 0.389, "BEAD WIRE": 1.091, "5493-FM": 0.500, "5447-FM": 0.401, "LN-2530": 0.152, "BOP-FM": 1.883, "LN-6641": 0.732, "BRC-FM": 1.223, "1227-FM": 0.259, "NN-0111": 0.066, "TCC-FM": 0.374, "TSW1-FM": 2.100},
     "8.25-16 HT-60 16PR": {"ILC-FM": 1.287, "KIP-FM": 3.451, "LN-6647": 2.053, "073-FM": 0.339, "BEAD WIRE": 0.951, "5493-FM": 0.292, "5447-FM": 0.307, "LN-2530": 0.133, "BOP-FM": 1.802, "LN-6641": 0.645, "BRC-FM": 0.966, "1227-FM": 0.350, "NN-0111": 0.089, "T1R-FM": 12.577, "TCC-FM": 0.483},
     "8.25-20 NB-32/27 14PR": {"ILC-FM": 1.770, "KIP-FM": 4.205, "LN-6647": 2.053, "073-FM": 0.404, "BEAD WIRE": 1.148, "5493-FM": 1.312, "5447-FM": 0.527, "LN-2530": 0.164, "BOP-FM": 1.132, "LN-6641": 0.440, "BRC-FM": 1.002, "1227-FM": 0.255, "NN-0111": 0.064, "T1R-FM": 15.090, "TCC-FM": 0.550, "SO 1481-FM": 1.840},
@@ -27,32 +24,55 @@ TIRE_BOM_DATA = {
     "650-14 HT-60": {"ILC-FM": 0.756, "073-FM": 0.109, "BEAD WIRE": 0.341, "5493-FM": 0.068, "LN-2530": 0.021, "1227-FM": 0.674, "NN-0111": 0.027, "TCC-FM": 0.335},
     "560-15 AT100 4PR": {"ILC-FM": 0.420, "073-FM": 0.070, "BEAD WIRE": 0.190, "LN-2530": 0.020, "1227-FM": 0.150, "NN-0111": 0.040, "TCC-FM": 0.170},
     "560-13 AT100 4PR": {"ILC-FM": 0.378, "073-FM": 0.060, "BEAD WIRE": 0.168, "LN-2530": 0.016, "1227-FM": 0.132, "NN-0111": 0.034, "TCC-FM": 0.171},
-    "600-12 AT100 4PR": {"ILC-FM": 0.360, "073-FM": 0.0} 
-}
-DYNAMIC_TREAD_SIZES = list(TIRE_BOM_DATA.keys())
+    "600-12 AT100 4PR": {"ILC-FM": 0.360, "073-FM": 0.060, "BEAD WIRE": 0.150, "LN-2530": 0.020, "1227-FM": 0.190, "NN-0111": 0.050, "TCC-FM": 0.140},
+    "520/550-12 AT100 4PR": {"ILC-FM": 0.290, "073-FM": 0.060, "BEAD WIRE": 0.150, "1227-FM": 0.120, "NN-0111": 0.030, "TCC-FM": 0.120},
+    "4.50-10 HT-60 8PR": {"ILC-FM": 0.280, "073-FM": 0.060, "BEAD WIRE": 0.160, "LN-2530": 0.020, "1227-FM": 0.380, "NN-0111": 0.030, "TCC-FM": 0.100},
+    "4.00-8 HT-60 6PR": {"ILC-FM": 0.212, "073-FM": 0.026, "BEAD WIRE": 0.074, "LN-2530": 0.015, "1227-FM": 0.270, "NN-0111": 0.016, "TCC-FM": 0.082},
+    "195-R15 MA310": {"H811Y-FM": 1.010, "B458-FM": 2.002, "B163-FM": 0.423, "A268-FM": 0.725, "A517-FM": 0.365, "S156-FM": 1.142, "R37-FM": 0.786, "B460-FM": 1.387, "STEEL CORD 3x0,20+6x0,35HT": 1.292, "T6730-FM": 2.975, "T11-FM": 0.664, "1440 dtex x 2 / 105": 0.566, "940 dtex x 2 / 80": 0.121, "BEAD WIRE": 0.189},
+    "18.4 HT F-444, 14PR": {"ILC-FM": 4.716, "073-FM": 0.881, "BEAD WIRE": 2.393, "5493-FM": 0.832, "5447-FM": 0.588, "LN-2530": 0.073, "1227-FM": 5.708, "NN-0111": 0.098, "TCC-FM": 0.193, "TSW1-FM": 9.990, "T3F-FM": 60.777},
+    "13.6-38 12/14PRTT": {"ILC-FM": 2.587, "073-FM": 1.117, "BEAD WIRE": 2.871, "5493-FM": 1.045, "5447-FM": 0.506, "LN-2530": 0.063, "1227-FM": 4.926, "NN-0111": 0.105, "TCC-FM": 0.178, "TSW1-FM": 6.400, "T3F-FM": 51.022},
+    "12.4-24 8PR HT-F-444": {"ILC-FM": 2.436, "073-FM": 0.381, "BEAD WIRE": 1.085, "5493-FM": 0.670, "5447-FM": 0.389, "LN-2530": 0.159, "1227-FM": 3.114, "NN-0111": 0.087, "TSW1-FM": 3.470, "T3F-FM": 26.560},
+    "18.4-34  HT-F-444, 8PR": {"ILC-FM": 5.083, "073-FM": 0.960, "BEAD WIRE": 2.734, "5493-FM": 0.938, "5447-FM": 0.665, "LN-2530": 0.082, "1227-FM": 6.282, "NN-0111": 0.120, "TSW1-FM": 9.600, "T3F-FM": 66.030},
+    "14.9-26 10PR TT": {"ILC-FM": 3.209, "073-FM": 0.537, "BEAD WIRE": 1.529, "5493-FM": 0.723, "5447-FM": 0.506, "LN-2530": 0.209, "1227-FM": 4.027, "NN-0111": 0.098, "TCC-FM": 0.125, "TSW1-FM": 5.120, "T3F-FM": 40.875},
+    "14.9-30  HT FT F-444, 12PR": {"ILC-FM": 3.453, "073-FM": 0.714, "BEAD WIRE": 1.932, "5493-FM": 0.832, "5447-FM": 0.588, "1227-FM": 4.447, "NN-0111": 0.098, "TCC-FM": 0.690, "TSW1-FM": 4.600, "T3F-FM": 44.680},
+    "500/60-22.5 HT-FT-777 16/18PR": {"ILC-FM": 5.170, "KIP-FM": 7.861, "LN-6647": 1.680, "073-FM": 0.877, "BEAD WIRE": 2.371, "5493-FM": 0.855, "5447-FM": 0.276, "LN-2530": 0.154, "BOP-FM": 4.320, "BRC-FM": 1.214, "1227-FM": 0.452, "NN-0111": 0.115, "TCC-FM": 0.620, "TSW1-FM": 4.020, "T3F-FM": 42.680},
+    "550/60-22.5 HT-FT-777 16/18PR": {"ILC-FM": 5.495, "KIP-FM": 8.996, "LN-6647": 5.352, "073-FM": 0.877, "BEAD WIRE": 2.371, "5493-FM": 0.167, "5447-FM": 0.276, "LN-2530": 0.196, "BOP-FM": 4.782, "LN-6641": 1.860, "BRC-FM": 1.633, "1227-FM": 0.154, "NN-0111": 0.084, "TCC-FM": 0.620, "TSW1-FM": 8.200, "T3F-FM": 44.080},
+    "18.4-38 HT F-444,14PR": {"ILC-FM": 4.464, "073-FM": 1.196, "BEAD WIRE": 3.233, "5493-FM": 1.047, "5447-FM": 0.743, "1227-FM": 6.573, "NN-0111": 0.084, "TCC-FM": 0.620, "TSW1-FM": 8.704, "T3F-FM": 74.580},
+    "14.9-24 HTF 444-8PR": {"ILC-FM": 2.923, "073-FM": 0.455, "BEAD WIRE": 1.231, "5493-FM": 0.670, "5447-FM": 0.506, "LN-2530": 0.218, "1227-FM": 3.737, "NN-0111": 0.091, "TCC-FM": 0.620, "TSW1-FM": 4.300, "T3F-FM": 38.680},
+    "1400-24-G222-18PR": {"ILC-FM": 5.432, "KIP-FM": 12.809, "LN-6647": 1.220, "073-FM": 1.534, "BEAD WIRE": 4.146, "5493-FM": 1.381, "5447-FM": 1.022, "LN-2530": 0.579, "BOP-FM": 4.707, "LN-6641": 1.251, "BRC-FM": 4.576, "1227-FM": 1.220, "NN-0111": 0.189, "TCC-FM": 0.563, "TSW1-FM": 10.000, "GT71-FM": 59.886},
+    "1400-20 MT HT-888 18PR": {"ILC-FM": 3.772, "KIP-FM": 11.573, "LN-6647": 4.344, "073-FM": 0.667, "BEAD WIRE": 1.803, "5493-FM": 1.170, "5447-FM": 0.860, "LN-2530": 0.349, "BOP-FM": 4.344, "LN-6641": 1.518, "1227-FM": 0.370, "NN-0111": 0.094, "TCC-FM": 0.563, "TSW1-FM": 8.600, "GT71-FM": 32.687},
+    "14.9-28 HT F-444 12PR": {"ILC-FM": 3.404, "073-FM": 0.669, "BEAD WIRE": 1.807, "5493-FM": 0.778, "5447-FM": 0.500, "LN-2530": 0.068, "1227-FM": 4.241, "NN-0111": 0.097, "TCC-FM": 0.563, "TSW1-FM": 6.200, "T3F-FM": 43.107},
+    "8.25-15 HT-I-222 16PR": {"ILC-FM": 1.347, "KIP-FM": 3.194, "LN-6647": 1.733, "073-FM": 0.437, "BEAD WIRE": 1.181, "5493-FM": 0.137, "5447-FM": 0.235, "LN-2530": 0.063, "LN-6641": 0.614, "1227-FM": 0.242, "NN-0111": 0.061, "TCC-FM": 0.494, "TFL-FM": 16.726},
+    "6.00-9 HT-I-222 12PR": {"ILC-FM": 0.428, "KIP-FM": 1.060, "LN-6647": 0.393, "073-FM": 0.133, "BEAD WIRE": 0.361, "LN-2530": 0.038, "LN-6641": 0.131, "1227-FM": 0.109, "NN-0111": 0.027, "TCC-FM": 0.202, "TFL-FM": 5.998},
+    "6.50-10 HT-I-222 12PR": {"ILC-FM": 0.551, "KIP-FM": 1.270, "LN-6647": 0.520, "073-FM": 0.144, "BEAD WIRE": 0.390, "LN-2530": 0.046, "LN-6641": 0.117, "BRC-FM": 0.470, "1227-FM": 0.112, "NN-0111": 0.031, "TCC-FM": 0.253, "TFL-FM": 7.547},
+    "135/80 D12 HT 65": {"ILC-FM": 0.420, "073-FM": 0.069, "BEAD WIRE": 0.186, "LN-2530": 0.016, "1227-FM": 0.095, "NN-0111": 0.024, "TCC-FM": 0.099},
+    "7.50 R16C 120/110Q": {"ILC-FM": 1.264, "KIP-FM": 1.416, "LN-6647": 1.364, "073-FM": 0.400, "BEAD WIRE": 0.949, "5493-FM": 0.186, "5447-FM": 0.150, "LN-2530": 0.050, "BOP-FM": 1.200, "LN-6641": 0.300, "BRC-FM": 0.950, "1227-FM": 0.250, "NN-0111": 0.050, "TCC-FM": 0.350},
+    "205 R16 110/108 MA 310": {"H811Y-FM": 1.120, "B458-FM": 1.662, "B163-FM": 0.405, "A268-FM": 0.778, "A517-FM": 0.158, "S156-FM": 2.498, "R37-FM": 3.771, "B460-FM": 1.191, "STEEL CORD 3x0,20+6x0,35HT": 1.951, "T6730-FM": 3.150, "T11-FM": 0.300, "1440 dtex x 2 / 105": 1.203, "940 dtex x 2 / 80": 0.300, "BEAD WIRE": 0.428},
+    "195/65 91T": {"ILC-FM": 0.974, "KIP-FM": 0.875, "LN-6647": 0.521, "073-FM": 0.300, "BEAD WIRE": 0.334},
+    "185/70 R14 88T MP 22": {"ILC-FM": 1.001, "KIP-FM": 0.666, "LN-6647": 0.601, "073-FM": 0.300, "BEAD WIRE": 0.504},
+    "185/70 R13 86T MP 22": {"ILC-FM": 2.673, "KIP-FM": 0.600, "LN-6647": 0.680, "073-FM": 0.300, "BEAD WIRE": 0.354},
+    "175/70 R14 84T MP 11": {"ILC-FM": 0.622, "KIP-FM": 0.511, "LN-6647": 0.477, "073-FM": 0.220, "BEAD WIRE": 0.316},
+    "175/70 R13 82T MP 11": {"ILC-FM": 0.622, "KIP-FM": 0.500, "LN-6647": 0.540, "073-FM": 0.220, "BEAD WIRE": 0.230},
+    "5763 BLADER": {"5763-FM": 5.000},
+    "5765 BLADDER": {"5765-FM": 5.400},
+    "FLAPS": {"5704 FM": 1.490},
+    "GRG": {"1481 FM": 1.749},
+    "C-100": {"C-100-FM": 2.049},
+    "C-200": {"C-200-FM": 3.780},
+    "107 MA": {"107-MA-FM": 80.601}
+}, orient='index').fillna(0)
 
-# 3=> MAIN APP INTERFACE
-st.title("🏭 HORIZON ADDIS TYRE Production Planner")
+# 2. UI Layout
+st.title("HORIZON ADDIS TYRE: Production BOM Dashboard")
 
-# Selection and Inputs
-selected_sizes = st.multiselect("Select Tire Sizes to Schedule", DYNAMIC_TREAD_SIZES)
-production_plan = {size: st.number_input(f"Units for {size}", min_value=0, value=0) for size in selected_sizes}
+selected_product = st.selectbox("Select Product", BOM_DATA.index)
 
-# 4=> CALCULATION LOGIC (THE BUTTON)
-if st.button("Calculate Total Materials"):
-    total_materials = {}
-    
-    # Aggregation loop
-    for size, quantity in production_plan.items():
-        if quantity > 0:
-            components = TIRE_BOM_DATA.get(size, {})
-            for comp, amount in components.items():
-                total_materials[comp] = total_materials.get(comp, 0) + (amount * quantity)
-            
-    # Display results
-    if total_materials:
-        st.subheader("Total Material Requirements")
-        df_results = pd.DataFrame.from_dict(total_materials, orient='index', columns=['Total Required'])
-        st.dataframe(df_results)
-    else:
-        st.write("Please enter production units to see results.")
+# 3. Calculation Display
+st.subheader(f"Raw Materials for {selected_product}")
+material_requirements = BOM_DATA.loc[selected_product]
+material_requirements = material_requirements[material_requirements > 0]
+
+st.table(material_requirements.reset_index().rename(columns={"index": "Material", selected_product: "Quantity (KG)"}))
+
+if st.button("Generate Production Report"):
+    st.success("Report generated for operational review.")
