@@ -61,9 +61,65 @@ BOM_DATA = pd.DataFrame.from_dict({
     "C-200": {"C-200-FM": 3.780},
     "107 MA": {"107-MA-FM": 80.601}
 }, orient='index').fillna(0)
+# Relationships: Compound -> Mixing Ingredients
+RECIPE_DATA = {
+    "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "Zinc Oxide": 0.0113, "Sulfur": 0.0181, "SMR-10 (sir-10)": 0.1394},
+    "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "Zinc Oxide": 0.0210, "Sulfur": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
+    "B458-FM": {"SMR-20 (SIR /SMR-20)": 0.2429, "BR 1220 (SKD-2)": 0.0972, "SBR 1712 (Kralex 1712)": 0.2004, "N-660 / GPF": 0.3353, "Zinc Oxide": 0.0146, "Sulfur": 0.0146, "SBR 1500 (Kralex 1500)": 0.0950},
+    "B460-FM": {"SMR-20 (SIR /SMR-20)": 0.5144, "N-326 / HAF-LS": 0.3189, "Zinc Oxide": 0.0360, "Sulfur": 0.0347, "SMR-10 (sir-10)": 0.0960},
+    "H811Y-FM": {"SMR-20 (SIR /SMR-20)": 0.0488, "EXXON CHLOROBUTYL 1066": 0.4389, "N-660 / GPF": 0.2438, "Zinc Oxide": 0.0146, "Sulfur": 0.0037, "BUTYL RUBBER BK 1675 N": 0.2502},
+    "R37-FM": {"SMR-20 (SIR /SMR-20)": 0.2002, "BR 1220 (SKD-2)": 0.3003, "N-339 / HAF-HS": 0.3504, "Zinc Oxide": 0.0150, "Sulfur": 0.0165, "SBR 1500 (Kralex 1500)": 0.1176},
+    "S156-FM": {"SMR-20 (SIR /SMR-20)": 0.3078, "BR 1220 (SKD-2)": 0.1231, "SBR 1500 (Kralex 1500)": 0.1847, "N-339 / HAF-HS": 0.2093, "Zinc Oxide": 0.0154, "Sulfur": 0.0203, "SBR 1712 (Kralex 1712)": 0.1394},
+    "T11-FM": {"SMR-20 (SIR /SMR-20)": 0.6133, "N-339 / HAF-HS": 0.2576, "Zinc Oxide": 0.0184, "Sulfur": 0.0156, "SMR-10 (sir-10)": 0.0951},
+    "T6730-FM": {"SMR-20 (SIR /SMR-20)": 0.0240, "BR 1220 (SKD-2)": 0.0719, "SBR 1500 (Kralex 1500)": 0.3837, "N-339 / HAF-HS": 0.3501, "Zinc Oxide": 0.0096, "Sulfur": 0.0086, "SBR 1712 (Kralex 1712)": 0.1521},
+    "ILC-FM": {"SMR-20 (SIR /SMR-20)": 0.35, "BUTYL RUBBER BK 1675 N": 0.42, "EXXON CHLOROBUTYL 1066": 0.12, "N-660 / GPF": 0.08, "Zinc Oxide": 0.02, "Sulfur": 0.01},
+    "KIP-FM": {"SMR-20 (SIR /SMR-20)": 0.45, "BR 1220 (SKD-2)": 0.15, "SBR 1500 (Kralex 1500)": 0.20, "N-330 / HAF": 0.15, "Zinc Oxide": 0.03, "Sulfur": 0.02},
+    "LN-6647": {"SMR-20 (SIR /SMR-20)": 0.50, "SBR 1712 (Kralex 1712)": 0.25, "N-339 / HAF-HS": 0.20, "Zinc Oxide": 0.03, "Sulfur": 0.02},
+    "073-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "SMR-10 (sir-10)": 0.20, "N-326 / HAF-LS": 0.35, "Zinc Oxide": 0.03, "Sulfur": 0.02},
+    "5493-FM": {"SMR-20 (SIR /SMR-20)": 0.30, "SBR 1500 (Kralex 1500)": 0.30, "N-550 / FEF": 0.35, "Sulfur": 0.05},
+    "5447-FM": {"SMR-20 (SIR /SMR-20)": 0.38, "BR 1220 (SKD-2)": 0.22, "N-330 / HAF": 0.35, "Sulfur": 0.05},
+    "LN-2530": {"SMR-20 (SIR /SMR-20)": 0.55, "SBR 1500 (Kralex 1500)": 0.15, "N-375 / HAF-HS": 0.25, "Sulfur": 0.05},
+    "BOP-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "RSS-1 (Vietnam /Egypt)": 0.20, "N-550 / FEF": 0.35, "Sulfur": 0.05},
+    "BRC-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "Sulfur": 0.05},
+    "TCC-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "BR 1220 (SKD-2)": 0.20, "N-339 / HAF-HS": 0.25, "Sulfur": 0.05},
+    "SO 1481-FM": {"SMR-20 (SIR /SMR-20)": 0.35, "SBR 1500 (Kralex 1500)": 0.25, "N-660 / GPF": 0.35, "Sulfur": 0.05},
+    "TO 1221-FM": {"SMR-20 (SIR /SMR-20)": 0.52, "BR 1220 (SKD-2)": 0.18, "N-330 / HAF": 0.25, "Sulfur": 0.05},
+    "TO 1390-FM": {"SMR-20 (SIR /SMR-20)": 0.48, "SBR 1712 (Kralex 1712)": 0.22, "N-339 / HAF-HS": 0.25, "Sulfur": 0.05},
+    "5763-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "Sulfur": 0.05},
+    "5765-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "Sulfur": 0.05},
+    "5704 FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-660 / GPF": 0.45, "Sulfur": 0.05},
+    "1481 FM": {"SMR-20 (SIR /SMR-20)": 0.35, "SBR 1500 (Kralex 1500)": 0.25, "N-660 / GPF": 0.35, "Sulfur": 0.05},
+    "C-100-FM": {"BUTYL RUBBER BK 1675 N": 0.62, "N-330 / HAF": 0.34, "Sulfur": 0.04},
+    "C-200-FM": {"SMR-20 (SIR /SMR-20)": 0.66, "N-330 / HAF": 0.29, "Sulfur": 0.05},
+    "107-MA-FM": {"SBR 1500 (Kralex 1500)": 0.53, "N-330 / HAF": 0.20, "N-550 / FEF": 0.135, "BUTYL RUBBER BK 1675 N": 0.135},
+    "BEAD WIRE": {"Bead Wire / Bide Wire (Steel)": 1.00},
+    "STEEL CORD 3x0,20+6x0,35HT": {"Bead Wire / Bide Wire (Steel)": 1.00},
+    "1440 dtex x 2 / 105": {"Bead Wire / Bide Wire (Steel)": 1.00},
+    "940 dtex x 2 / 80": {"Bead Wire / Bide Wire (Steel)": 1.00}
+}
 
-# 2. UI Layout
-st.title("HORIZON ADDIS TYRE: Production BOM Dashboard")
+# 2. UI DESIGN
+st.set_page_config(page_title="Horizon Addis Tyre Dashboard", layout="wide")
+st.title("HORIZON ADDIS TYRE: Production Dashboard")
+
+tab1, tab2 = st.tabs(["Product Bill of Materials", "Compound Mixing Recipes"])
+
+with tab1:
+    st.subheader("Product-to-Compound Relationship")
+    selected_prod = st.selectbox("Select Tyre Size", df_bom.index)
+    compounds = df_bom.loc[selected_prod]
+    st.table(compounds[compounds > 0])
+
+with tab2:
+    st.subheader("Compound-to-Ingredient Relationship")
+    selected_comp = st.selectbox("Select Compound", list(RECIPE_DATA.keys()))
+    recipe = RECIPE_DATA.get(selected_comp, {})
+    
+    st.write(f"### Mixing Formula: {selected_comp}")
+    for ing, val in recipe.items():
+        col1, col2 = st.columns([3, 1])
+        col1.write(f"└─ **{ing}**")
+        col2.code(f"{val:.4f} KG")st.title("HORIZON ADDIS TYRE: Production BOM Dashboard")
 
 selected_product = st.selectbox("Select Product", BOM_DATA.index)
 
