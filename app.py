@@ -62,6 +62,8 @@ BOM_DATA = pd.DataFrame.from_dict({
     "107 MA": {"107-MA-FM": 80.601}
 }, orient='index').fillna(0)
 # Relationships: Compound -> Mixing Ingredients
+import streamlit as st
+import pandas as pd
 RECIPE_DATA = {
     "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "Zinc Oxide": 0.0113, "Sulfur": 0.0181, "SMR-10 (sir-10)": 0.1394},
     "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "Zinc Oxide": 0.0210, "Sulfur": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
@@ -119,10 +121,7 @@ with tab2:
     for ing, val in recipe.items():
         col1, col2 = st.columns([3, 1])
         col1.write(f"└─ **{ing}**")
-        col2.code(f"{val:.4f} KG")
-        st.title("HORIZON ADDIS TYRE: Production BOM Dashboard")
-
-selected_product = st.selectbox("Select Product", BOM_DATA.index)
+        col2.code(f"{val:.4f} KG")selected_product = st.selectbox("Select Product", BOM_DATA.index)
 
 # 3. Calculation Display
 st.subheader(f"Raw Materials for {selected_product}")
