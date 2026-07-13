@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# 1. DATA CONFIGURATION
+# --- 1. DATA CONFIGURATION ---
 BOM_DATA = pd.DataFrame.from_dict({
     "8.25-16 HT-40 16PR": {"ILC-FM": 1.447, "KIP-FM": 3.872, "LN-6647": 2.303, "073-FM": 0.389, "BEAD WIRE": 1.091, "5493-FM": 0.500, "5447-FM": 0.401, "LN-2530": 0.152, "BOP-FM": 1.883, "LN-6641": 0.732, "BRC-FM": 1.223, "1227-FM": 0.259, "NN-0111": 0.066, "TCC-FM": 0.374, "TSW1-FM": 2.100},
     "8.25-16 HT-60 16PR": {"ILC-FM": 1.287, "KIP-FM": 3.451, "LN-6647": 2.053, "073-FM": 0.339, "BEAD WIRE": 0.951, "5493-FM": 0.292, "5447-FM": 0.307, "LN-2530": 0.133, "BOP-FM": 1.802, "LN-6641": 0.645, "BRC-FM": 0.966, "1227-FM": 0.350, "NN-0111": 0.089, "T1R-FM": 12.577, "TCC-FM": 0.483},
@@ -98,36 +98,51 @@ RECIPE_DATA = {
     "940 dtex x 2 / 80": {"Bead Wire / Bide Wire (Steel)": 1.00}
 }
 
-# UI DESIGN
-st.set_page_config(page_title="Horizon Addis Tyre Dashboard", layout="wide")
-st.title("HORIZON ADDIS TYRE: Production Dashboard")
+# --- 2. CSS STYLING ---
+st.set_page_config(page_title="Horizon Production System", layout="wide")
+st.markdown("""
+    <style>
+    .compound-card {
+        background-color: #f1f3f4;
+        padding: 20px;
+        border-radius: 12px;
+        border-top: 5px solid #ff4b4b;
+        margin-bottom: 20px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["Product Bill of Materials", "Compound Mixing Recipes"])
+# --- 3. UI LAYOUT ---
+st.title("🏭 HORIZON ADDIS TYRE: Production Dashboard")
 
-with tab1:
-    st.subheader("Raw Materials for Product")
-    selected_product = st.selectbox("Select Product", BOM_DATA.index)
-    
-    material_requirements = BOM_DATA.loc[selected_product]
-    material_requirements = material_requirements[material_requirements > 0]
-    
-    st.table(material_requirements.reset_index().rename(columns={"index": "Material", selected_product: "Quantity (KG)"}))
-    
-    if st.button("Generate Production Report"):
-        st.success("Report generated for operational review.")
+# Selection
+selected_product = st.selectbox("1. Select Product Size for Production Run", list(BOM_DATA.index))
 
-with tab2:
-    st.subheader("Compound Mixing Recipes")
-    selected_comp = st.selectbox("Select Compound", list(RECIPE_DATA.keys()))
-    recipe = RECIPE_DATA.get(selected_comp, {})
-    
-    # Batch size calculator
-    batch_size = st.number_input("Enter Total Batch Size (KG)", min_value=1.0, value=100.0, step=1.0)
-    st.write(f"### Mixing Formula: {selected_comp} (Total: {batch_size} KG)")
-    
-    scaled_recipe = {ing: (val * batch_size) for ing, val in recipe.items()}
-    
-    for ing, val in scaled_recipe.items():
-        col1, col2 = st.columns([3, 1])
-        col1.write(f"└─ **{ing}**")
-        col2.code(f"{val:.2f} KG")
+st.markdown("---")
+st.subheader(f"2. Cascaded Requirements for {selected_product}")
+
+# Logic: Get compounds for the selected product
+row = BOM_DATA.loc[selected_product]
+compounds = row[row > 0].index.tolist()
+
+# Organize in a responsive grid
+cols = st.columns(3)
+
+for i, comp_name in enumerate(compounds):
+    if comp_name in RECIPE_DATA:
+        with cols[i % 3]:
+            st.markdown(f'<div class="compound-card">', unsafe_allow_html=True)
+            st.write(f"#### {comp_name}")
+            
+            # Interactive batch size for this specific compound
+            batch = st.number_input(f"Batch (KG) for {comp_name}", 1.0, 1000.0, 100.0, key=f"b_{comp_name}_{i}")
+            
+            # Calculate and display components
+            recipe = RECIPE_DATA.get(comp_name, {})
+            for ing, val in recipe.items():
+                st.caption(f"{ing}: **{(val * batch):.2f} KG**")
+            st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        with cols[i % 3]:
+            st.warning(f"No recipe data for: {comp_name}")
