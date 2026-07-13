@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# 1. BOM DATA CONFIGURATION
+# 1. DATA CONFIGURATION
 BOM_DATA = pd.DataFrame.from_dict({
     "8.25-16 HT-40 16PR": {"ILC-FM": 1.447, "KIP-FM": 3.872, "LN-6647": 2.303, "073-FM": 0.389, "BEAD WIRE": 1.091, "5493-FM": 0.500, "5447-FM": 0.401, "LN-2530": 0.152, "BOP-FM": 1.883, "LN-6641": 0.732, "BRC-FM": 1.223, "1227-FM": 0.259, "NN-0111": 0.066, "TCC-FM": 0.374, "TSW1-FM": 2.100},
     "8.25-16 HT-60 16PR": {"ILC-FM": 1.287, "KIP-FM": 3.451, "LN-6647": 2.053, "073-FM": 0.339, "BEAD WIRE": 0.951, "5493-FM": 0.292, "5447-FM": 0.307, "LN-2530": 0.133, "BOP-FM": 1.802, "LN-6641": 0.645, "BRC-FM": 0.966, "1227-FM": 0.350, "NN-0111": 0.089, "T1R-FM": 12.577, "TCC-FM": 0.483},
@@ -117,13 +117,17 @@ with tab1:
         st.success("Report generated for operational review.")
 
 with tab2:
-    st.subheader("Compound-to-Ingredient Relationship")
+    st.subheader("Compound Mixing Recipes")
     selected_comp = st.selectbox("Select Compound", list(RECIPE_DATA.keys()))
     recipe = RECIPE_DATA.get(selected_comp, {})
     
-    st.write(f"### Mixing Formula: {selected_comp}")
+    # Batch size calculator
+    batch_size = st.number_input("Enter Total Batch Size (KG)", min_value=1.0, value=100.0, step=1.0)
+    st.write(f"### Mixing Formula: {selected_comp} (Total: {batch_size} KG)")
     
-    for ing, val in recipe.items():
+    scaled_recipe = {ing: (val * batch_size) for ing, val in recipe.items()}
+    
+    for ing, val in scaled_recipe.items():
         col1, col2 = st.columns([3, 1])
         col1.write(f"└─ **{ing}**")
-        col2.code(f"{val:.4f} KG")
+        col2.code(f"{val:.2f} KG")
