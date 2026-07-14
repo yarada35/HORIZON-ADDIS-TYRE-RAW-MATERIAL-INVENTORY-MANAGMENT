@@ -933,7 +933,7 @@ def get_data():
     },
     "GRG": {
         "FLAPS": 1.0
-    }, orient='index').fillna(0)
+    , orient='index').fillna(0)
 
     recipe_data = {
         "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "Zinc Oxide": 0.0113, "Sulfur": 0.0181, "SMR-10 (sir-10)": 0.1394},
