@@ -1,7 +1,11 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. DATA CONFIGURATION ---
+# --- 1. PAGE CONFIGURATION ---
+# Must be the first Streamlit command
+st.set_page_config(page_title="Horizon Production System", layout="wide")
+
+# --- 2. DATA CONFIGURATION ---
 @st.cache_data
 def get_data():
     bom_data = pd.DataFrame.from_dict({
@@ -109,15 +113,14 @@ def get_data():
 
 BOM_DATA, RECIPE_DATA = get_data()
 
-# --- 2. CSS STYLING ---
-st.set_page_config(page_title="Horizon Production System", layout="wide")
+# --- 3. CSS STYLING ---
 st.markdown("""
     <style>
     .compound-card { background-color: #f1f3f4; padding: 20px; border-radius: 12px; border-top: 5px solid #ff4b4b; margin-bottom: 20px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. UI LAYOUT ---
+# --- 4. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Production Dashboard")
 
 tab1, tab2 = st.tabs(["📊 Real-time Production", "📅 Material Planning"])
@@ -145,32 +148,29 @@ with tab2:
     st.header("Material Requirements Planning")
     p_col1, p_col2 = st.columns(2)
     with p_col1:
-        # Multiselect allows picking multiple tyre sizes at once
         plan_products = st.multiselect("Select Products for Plan", list(BOM_DATA.index))
         timeframe = st.selectbox("Select Period", ["Daily", "Monthly", "Annually"])
     with p_col2:
         target_qty = st.number_input("Target Units per Product", 1, 10000, 100)
 
-    if st.button("Generate Requirement Report") and plan_products:
-        multiplier = 1 if timeframe == "Daily" else (30 if timeframe == "Monthly" else 365)
-        total_units = target_qty * multiplier
-        
-        st.subheader(f"Aggregated Ingredients for {len(plan_products)} Products ({timeframe})")
-        
-        total_materials = {}
-        
-        # Iterate through all selected products
-        for product in plan_products:
-            bom_row = BOM_DATA.loc[product]
-            for compound, compound_qty in bom_row.items():
-                if compound_qty > 0 and compound in RECIPE_DATA:
-                    for ingredient, ratio in RECIPE_DATA[compound].items():
-                        # Calculate total for this product and add to aggregate
-                        needed = ratio * compound_qty * total_units
-                        total_materials[ingredient] = total_materials.get(ingredient, 0) + needed
-        
-        df_results = pd.DataFrame.from_dict(total_materials, orient='index', columns=['Total Required (KG)'])
-        st.dataframe(df_results.sort_values(by='Total Required (KG)', ascending=False).style.format("{:.2f}"), use_container_width=True)
-        st.download_button("Download Report (CSV)", df_results.to_csv(), "plan.csv", "text/csv")
-    elif st.button("Generate Requirement Report") and not plan_products:
-        st.warning("Please select at least one product.")
+    if st.button("Generate Requirement Report"):
+        if plan_products:
+            multiplier = 1 if timeframe == "Daily" else (30 if timeframe == "Monthly" else 365)
+            total_units = target_qty * multiplier
+            
+            st.subheader(f"Aggregated Ingredients for {len(plan_products)} Products ({timeframe})")
+            
+            total_materials = {}
+            for product in plan_products:
+                bom_row = BOM_DATA.loc[product]
+                for compound, compound_qty in bom_row.items():
+                    if compound_qty > 0 and compound in RECIPE_DATA:
+                        for ingredient, ratio in RECIPE_DATA[compound].items():
+                            needed = ratio * compound_qty * total_units
+                            total_materials[ingredient] = total_materials.get(ingredient, 0) + needed
+            
+            df_results = pd.DataFrame.from_dict(total_materials, orient='index', columns=['Total Required (KG)'])
+            st.dataframe(df_results.sort_values(by='Total Required (KG)', ascending=False).style.format("{:.2f}"), use_container_width=True)
+            st.download_button("Download Report (CSV)", df_results.to_csv(), "plan.csv", "text/csv")
+        else:
+            st.warning("Please select at least one product.")
