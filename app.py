@@ -81,7 +81,21 @@ def get_data():
         "BEAD WIRE": {"Bead Wire / Bide Wire (Steel)": 1.00},
         "STEEL CORD 3x0,20+6x0,35HT": {"Bead Wire / Bide Wire (Steel)": 1.00},
         "1440 dtex x 2 / 105": {"Bead Wire / Bide Wire (Steel)": 1.00},
-        "940 dtex x 2 / 80": {"Bead Wire / Bide Wire (Steel)": 1.00}
+        "940 dtex x 2 / 80": {"Bead Wire / Bide Wire (Steel)": 1.00},
+        "A268-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "049-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "044-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "086-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "015-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "048-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "04-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "2*0.3 Ht/ NT": {"Steel Cord": 1.00},
+        "054-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "1754-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "T3F-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "GT71-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "TFL-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "5061-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50}
     }
     return bom_data, recipe_data
 
