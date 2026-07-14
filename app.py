@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. DATA CONFIGURATION (Cached for Stability) ---
+# --- 1. DATA CONFIGURATION ---
 @st.cache_data
 def get_data():
     bom_data = pd.DataFrame.from_dict({
@@ -49,7 +49,6 @@ def get_data():
     }, orient='index').fillna(0)
 
     recipe_data = {
-        # --- ORIGINAL DATA ---
         "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "Zinc Oxide": 0.0113, "Sulfur": 0.0181, "SMR-10 (sir-10)": 0.1394},
         "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "Zinc Oxide": 0.0210, "Sulfur": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
         "B458-FM": {"SMR-20 (SIR /SMR-20)": 0.2429, "BR 1220 (SKD-2)": 0.0972, "SBR 1712 (Kralex 1712)": 0.2004, "N-660 / GPF": 0.3353, "Zinc Oxide": 0.0146, "Sulfur": 0.0146, "SBR 1500 (Kralex 1500)": 0.0950},
@@ -98,8 +97,6 @@ def get_data():
         "GT71-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
         "TFL-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
         "5061-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        
-        # --- PLACEHOLDERS FOR MISSING ENTRIES ---
         "TSW1-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
         "LN-6641": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
         "LN-4554": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
@@ -116,46 +113,56 @@ BOM_DATA, RECIPE_DATA = get_data()
 st.set_page_config(page_title="Horizon Production System", layout="wide")
 st.markdown("""
     <style>
-    .compound-card {
-        background-color: #f1f3f4;
-        padding: 20px;
-        border-radius: 12px;
-        border-top: 5px solid #ff4b4b;
-        margin-bottom: 20px;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-    }
+    .compound-card { background-color: #f1f3f4; padding: 20px; border-radius: 12px; border-top: 5px solid #ff4b4b; margin-bottom: 20px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
     </style>
     """, unsafe_allow_html=True)
 
 # --- 3. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Production Dashboard")
 
-# Selection
-selected_product = st.selectbox("1. Select Product Size for Production Run", list(BOM_DATA.index))
+tab1, tab2 = st.tabs(["📊 Real-time Production", "📅 Material Planning"])
 
-st.markdown("---")
-st.subheader(f"2. Cascaded Requirements for {selected_product}")
+# --- TAB 1: PRODUCTION ---
+with tab1:
+    selected_product = st.selectbox("1. Select Product Size", list(BOM_DATA.index))
+    st.markdown("---")
+    row = BOM_DATA.loc[selected_product]
+    compounds = row[row > 0].index.tolist()
+    cols = st.columns(3)
+    for i, comp_name in enumerate(compounds):
+        with cols[i % 3]:
+            st.markdown('<div class="compound-card">', unsafe_allow_html=True)
+            st.write(f"#### {comp_name}")
+            batch = st.number_input(f"Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
+            recipe = RECIPE_DATA.get(comp_name)
+            if recipe:
+                for ing, val in recipe.items():
+                    st.caption(f"{ing}: **{(val * batch):.2f} KG**")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-# Logic: Get compounds for the selected product
-row = BOM_DATA.loc[selected_product]
-compounds = row[row > 0].index.tolist()
+# --- TAB 2: PLANNING ---
+with tab2:
+    st.header("Material Requirements Planning")
+    p_col1, p_col2 = st.columns(2)
+    with p_col1:
+        plan_product = st.selectbox("Select Product for Plan", list(BOM_DATA.index))
+        timeframe = st.selectbox("Select Period", ["Daily", "Monthly", "Annually"])
+    with p_col2:
+        target_qty = st.number_input("Target Production Units", 1, 10000, 100)
 
-# Organize in a responsive grid
-cols = st.columns(3)
-
-for i, comp_name in enumerate(compounds):
-    with cols[i % 3]:
-        st.markdown('<div class="compound-card">', unsafe_allow_html=True)
-        st.write(f"#### {comp_name}")
+    if st.button("Generate Requirement Report"):
+        bom_row = BOM_DATA.loc[plan_product]
+        multiplier = 1 if timeframe == "Daily" else (30 if timeframe == "Monthly" else 365)
+        total_units = target_qty * multiplier
         
-        # Interactive batch size with stable key
-        batch = st.number_input(f"Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
+        st.subheader(f"Total Ingredients for {total_units} Units ({timeframe})")
         
-        # Calculate and display components
-        recipe = RECIPE_DATA.get(comp_name)
-        if recipe:
-            for ing, val in recipe.items():
-                st.caption(f"{ing}: **{(val * batch):.2f} KG**")
-        else:
-            st.warning(f"No recipe data for: {comp_name}")
-        st.markdown('</div>', unsafe_allow_html=True)
+        total_materials = {}
+        for compound, compound_qty in bom_row.items():
+            if compound_qty > 0 and compound in RECIPE_DATA:
+                for ingredient, ratio in RECIPE_DATA[compound].items():
+                    total_materials[ingredient] = total_materials.get(ingredient, 0) + (ratio * compound_qty * total_units)
+        
+        df_results = pd.DataFrame.from_dict(total_materials, orient='index', columns=['Total Required (KG)'])
+        st.dataframe(df_results.style.format("{:.2f}"), use_container_width=True)
+        st.download_button("Download Report (CSV)", df_results.to_csv(), "plan.csv", "text/csv")
