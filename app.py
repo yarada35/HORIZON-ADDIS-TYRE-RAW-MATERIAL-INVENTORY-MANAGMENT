@@ -49,6 +49,7 @@ def get_data():
     }, orient='index').fillna(0)
 
     recipe_data = {
+        # --- ORIGINAL DATA ---
         "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "Zinc Oxide": 0.0113, "Sulfur": 0.0181, "SMR-10 (sir-10)": 0.1394},
         "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "Zinc Oxide": 0.0210, "Sulfur": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
         "B458-FM": {"SMR-20 (SIR /SMR-20)": 0.2429, "BR 1220 (SKD-2)": 0.0972, "SBR 1712 (Kralex 1712)": 0.2004, "N-660 / GPF": 0.3353, "Zinc Oxide": 0.0146, "Sulfur": 0.0146, "SBR 1500 (Kralex 1500)": 0.0950},
@@ -96,7 +97,16 @@ def get_data():
         "T3F-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
         "GT71-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
         "TFL-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "5061-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50}
+        "5061-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        
+        # --- PLACEHOLDERS FOR MISSING ENTRIES ---
+        "TSW1-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "LN-6641": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "LN-4554": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "NN-0111": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "1243-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "1227-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "LN-4540": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50}
     }
     return bom_data, recipe_data
 
