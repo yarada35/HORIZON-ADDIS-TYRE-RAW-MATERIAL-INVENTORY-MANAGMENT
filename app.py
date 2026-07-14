@@ -79,6 +79,7 @@ def get_data():
         "C-200-FM": {"SMR-20 (SIR /SMR-20)": 0.66, "N-330 / HAF": 0.29, "Sulfur": 0.05},
         "107-MA-FM": {"SBR 1500 (Kralex 1500)": 0.53, "N-330 / HAF": 0.20, "N-550 / FEF": 0.135, "BUTYL RUBBER BK 1675 N": 0.135},
         "BEAD WIRE": {"Bead Wire / Bide Wire (Steel)": 1.00},
+        "STEEL CORD 2+2x0,32 HT / 56": {"Bead Wire / Bide Wire (Steel)": 1.00},
         "STEEL CORD 3x0,20+6x0,35HT": {"Bead Wire / Bide Wire (Steel)": 1.00},
         "1440 dtex x 2 / 105": {"Bead Wire / Bide Wire (Steel)": 1.00},
         "940 dtex x 2 / 80": {"Bead Wire / Bide Wire (Steel)": 1.00},
