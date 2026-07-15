@@ -9,7 +9,6 @@ st.set_page_config(page_title="Horizon Production System", layout="wide")
 def get_data():
     # Complete Inventory Dataset
     inventory_data = pd.DataFrame([
-        # --- RUBBERS & POLYMERS ---
         {"Material": "SMR-20 (SIR /SMR-20)", "Beginning": 708517.13, "WIP": 708517.13, "Ending": 472344.8},
         {"Material": "BEBEKA RUBBER (SMR-20)", "Beginning": 1022.51, "WIP": 1022.51, "Ending": 681.67},
         {"Material": "BR 1220 (SKD-2)", "Beginning": 91616.55, "WIP": 91616.55, "Ending": 61077.7},
@@ -19,49 +18,35 @@ def get_data():
         {"Material": "BUTYL RUBBER BK 1675 N", "Beginning": 1748.18, "WIP": 1748.18, "Ending": 1165.45},
         {"Material": "WHOLE TYRE RECLAIM RUBBER (Reclaim RSTN)", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 8000.00},
         {"Material": "ECCOR RBR 70", "Beginning": 5000.00, "WIP": 5000.00, "Ending": 4000.00},
-        
-        # --- CARBON BLACKS ---
         {"Material": "N-220 / ISAF", "Beginning": 8000.00, "WIP": 8000.00, "Ending": 6500.00},
         {"Material": "N-326 / HAF-LS", "Beginning": 12000.00, "WIP": 12000.00, "Ending": 9500.00},
         {"Material": "N-330 / HAF", "Beginning": 30000.00, "WIP": 30000.00, "Ending": 22000.00},
         {"Material": "N-339 / HAF-HS", "Beginning": 15000.00, "WIP": 15000.00, "Ending": 11000.00},
         {"Material": "N-550 / FEF", "Beginning": 20000.00, "WIP": 20000.00, "Ending": 14000.00},
         {"Material": "N-660 / GPF", "Beginning": 25000.00, "WIP": 25000.00, "Ending": 19500.00},
-        
-        # --- OILS & PROCESS AIDS ---
         {"Material": "HAO (Dutrex RA-3)", "Beginning": 15000.00, "WIP": 15000.00, "Ending": 11000.00},
         {"Material": "TRUSTRING OIL", "Beginning": 8000.00, "WIP": 8000.00, "Ending": 6000.00},
         {"Material": "PROCESS OIL (PR-2)", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 7500.00},
         {"Material": "CASTOR OIL", "Beginning": 2000.00, "WIP": 2000.00, "Ending": 1500.00},
-        
-        # --- INORGANICS & ACIDS ---
         {"Material": "ZINC OXIDE (Zinc Oxide 98%)", "Beginning": 12000.00, "WIP": 12000.00, "Ending": 9200.00},
         {"Material": "RENACIT PEPTIZER / ZINCOLET-86 / PEPTIZOL-7", "Beginning": 3000.00, "WIP": 3000.00, "Ending": 2200.00},
         {"Material": "AKTIPLAST / ZINCOLET-T / ACMETOL T", "Beginning": 4000.00, "WIP": 4000.00, "Ending": 3100.00},
         {"Material": "RUBBER GRADE STEARIC ACID (Stearin 18 RG vlocky)", "Beginning": 6000.00, "WIP": 6000.00, "Ending": 4800.00},
-        
-        # --- ANTIOXIDANTS & ANTIOZONANTS ---
         {"Material": "IPPD (Vulkanox 4010, Dusantox IPPD)", "Beginning": 5000.00, "WIP": 5000.00, "Ending": 3900.00},
         {"Material": "TMQ (Vulkanox HS, Dusantox 86)", "Beginning": 4500.00, "WIP": 4500.00, "Ending": 3200.00},
         {"Material": "OSW-111 (Antilux 111)", "Beginning": 3000.00, "WIP": 3000.00, "Ending": 2100.00},
         {"Material": "6PPD/4020", "Beginning": 8000.00, "WIP": 8000.00, "Ending": 6100.00},
         {"Material": "77PD", "Beginning": 2000.00, "WIP": 2000.00, "Ending": 1400.00},
-        
-        # --- RESINS & ADHESIVES ---
         {"Material": "COHEDURE RS", "Beginning": 1500.00, "WIP": 1500.00, "Ending": 1100.00},
         {"Material": "BASF KORESIN POWDRE(RESIN) / RIBETAK R7578 P", "Beginning": 2500.00, "WIP": 2500.00, "Ending": 1800.00},
         {"Material": "Durez 12 686", "Beginning": 3000.00, "WIP": 3000.00, "Ending": 2200.00},
         {"Material": "MANOBOND 680 C", "Beginning": 1800.00, "WIP": 1800.00, "Ending": 1300.00},
         {"Material": "PENACOLITE RESIN B 20S", "Beginning": 2000.00, "WIP": 2000.00, "Ending": 1500.00},
         {"Material": "COUMARON RESIN/NECIRES LF 220.100 FLAKES", "Beginning": 4000.00, "WIP": 4000.00, "Ending": 3100.00},
-        
-        # --- FILLERS & SILICA ---
         {"Material": "CHINA CLAY KAOLINE", "Beginning": 15000.00, "WIP": 15000.00, "Ending": 12000.00},
         {"Material": "ULTRASIL VN-3, Vulkasil'S, Perkasil KS-408, KADISIL KS1", "Beginning": 18000.00, "WIP": 18000.00, "Ending": 14200.00},
         {"Material": "CALCIUM CARBONTE/WHITING CHALK", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 7800.00},
         {"Material": "LUVOMAG 290 (MgO)", "Beginning": 1200.00, "WIP": 1200.00, "Ending": 950.00},
-        
-        # --- VULCANIZING AGENTS & ACCELERATORS ---
         {"Material": "NORMAL SULPHUR", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 8100.00},
         {"Material": "INSOLUBLE SULPHUR (Crystex HD OT20)", "Beginning": 6000.00, "WIP": 6000.00, "Ending": 4700.00},
         {"Material": "INSOLUBLE SULPHUR (Crystex HD OT33)", "Beginning": 5000.00, "WIP": 5000.00, "Ending": 3900.00},
@@ -94,8 +79,6 @@ def get_data():
         {"Material": "DPG", "Beginning": 1200.00, "WIP": 1200.00, "Ending": 900.00},
         {"Material": "NA-22", "Beginning": 800.00, "WIP": 800.00, "Ending": 600.00},
         {"Material": "STRUKTOL WB-16 BEADS", "Beginning": 1500.00, "WIP": 1500.00, "Ending": 1150.00},
-        
-        # --- NYLON, POLYESTER, BEAD AND STEEL CORD ---
         {"Material": "LN-6647", "Beginning": 12000.00, "WIP": 12000.00, "Ending": 9800.00},
         {"Material": "LN-6641", "Beginning": 11000.00, "WIP": 11000.00, "Ending": 8500.00},
         {"Material": "LN-4554", "Beginning": 9000.00, "WIP": 9000.00, "Ending": 7200.00},
@@ -110,11 +93,9 @@ def get_data():
         {"Material": "BIDE WIRE", "Beginning": 56131.55, "WIP": 56131.55, "Ending": 37421.03}
     ]).set_index("Material")
 
-    # Full BOM Dataset
     bom_data = pd.DataFrame.from_dict({
         "18.4-38 HT F-444,14PR": {"ILC-FM": 4.464, "073-FM": 1.196, "BEAD WIRE": 3.233, "5493-FM": 1.047, "5447-FM": 0.743, "LN-2530": 0.092, "1243-FM": 12.796, "LN-4554": 5.484, "LN-4540": 1.711, "1227-FM": 6.573, "NN-0111": 0.034, "TCC-FM": 0.62, "TSW1-FM": 8.704, "T3F-FM": 74.58},
         "1000-20 HT-90 16/18PR": {"ILC-FM": 2.39, "KIP-FM": 8.794, "LN-6647": 5.231, "073-FM": 0.671, "BEAD WIRE": 1.813, "5493-FM": 1.17, "5447-FM": 0.739, "LN-2530": 0.24, "BOP-FM": 3.217, "LN-6641": 1.114, "BRC-FM": 1.502, "1227-FM": 0.321, "NN-0111": 0.081, "T1R-FM": 15.311, "TCC-FM": 0.512, "TBR-FM": 4.644, "TSW1-FM": 2.88},
-        "107 MA": {"107 MA": 1.0},
         "1100-20 AT-20 18PR": {"ILC-FM": 2.286, "KIP-FM": 8.921, "LN-6647": 5.307, "073-FM": 0.707, "BEAD WIRE": 2.013, "5493-FM": 0.57, "5447-FM": 0.322, "LN-2530": 0.252, "BOP-FM": 2.659, "LN-6641": 1.034, "BRC-FM": 3.398, "1227-FM": 0.28, "NN-0111": 0.071, "TCC-FM": 0.74, "TSW1-FM": 2.45, "TO 1221-FM": 14.0, "TO 1390-FM": 5.751},
         "1100-20 HT-90 16/18PR": {"ILC-FM": 2.566, "KIP-FM": 9.058, "LN-6647": 5.389, "073-FM": 0.671, "BEAD WIRE": 1.813, "5493-FM": 1.17, "5447-FM": 0.739, "LN-2530": 0.244, "BOP-FM": 3.388, "LN-6641": 1.181, "BRC-FM": 1.546, "1227-FM": 0.37, "NN-0111": 0.094, "T1R-FM": 13.136, "TCC-FM": 0.54, "TBR-FM": 7.07, "TSW1-FM": 2.931},
         "12.4-24 8PR HT-F-444": {"ILC-FM": 2.436, "073-FM": 0.381, "BEAD WIRE": 1.085, "5493-FM": 0.67, "5447-FM": 0.389, "LN-2530": 0.159, "1243-FM": 2.872, "LN-4554": 1.229, "LN-4540": 0.737, "1227-FM": 3.114, "NN-0111": 0.087, "1754-FM": 1.276, "TSW1-FM": 3.47, "T3F-FM": 26.56},
@@ -144,320 +125,99 @@ def get_data():
         "550/60-22.5 HT-FT-777 16/18PR": {"ILC-FM": 5.495, "KIP-FM": 8.996, "LN-6647": 5.352, "073-FM": 0.877, "BEAD WIRE": 2.371, "5493-FM": 0.167, "5447-FM": 0.276, "LN-2530": 0.196, "BOP-FM": 4.782, "LN-6641": 1.86, "BRC-FM": 1.633, "1227-FM": 0.333, "NN-0111": 0.084, "TCC-FM": 0.62, "TSW1-FM": 8.2, "T3F-FM": 44.08},
         "560-13 AT100 4PR": {"ILC-FM": 0.378, "073-FM": 0.06, "BEAD WIRE": 0.168, "LN-2530": 0.016, "1243-FM": 0.829, "LN-4554": 0.355, "1227-FM": 0.132, "NN-0111": 0.034, "1754-FM": 0.189, "TCC-FM": 0.171, "5061-FM": 4.099},
         "560-15 AT100 4PR": {"ILC-FM": 0.416, "073-FM": 0.071, "BEAD WIRE": 0.191, "LN-2530": 0.019, "1243-FM": 0.943, "LN-4554": 0.404, "1227-FM": 0.146, "NN-0111": 0.037, "1754-FM": 0.216, "TCC-FM": 0.17, "5061-FM": 4.58},
-        "5763 BLADER": {"5763 FM": 1.0},
-        "5765 BLADDER": {"5765 FM": 1.0},
         "6.00-9 HT-I-222 12PR": {"ILC-FM": 0.428, "KIP-FM": 1.06, "LN-6647": 0.631, "073-FM": 0.133, "BEAD WIRE": 0.361, "LN-2530": 0.038, "BOP-FM": 0.393, "LN-6641": 0.131, "BRC-FM": 0.385, "1227-FM": 0.109, "NN-0111": 0.027, "TCC-FM": 0.202, "TFL-FM": 5.998},
         "6.50-10 HT-I-222 12PR": {"ILC-FM": 0.551, "KIP-FM": 1.27, "LN-6647": 0.756, "073-FM": 0.144, "BEAD WIRE": 0.39, "LN-2530": 0.046, "BOP-FM": 0.52, "LN-6641": 0.117, "BRC-FM": 0.47, "1227-FM": 0.122, "NN-0111": 0.031, "TCC-FM": 0.253, "TFL-FM": 7.547},
         "600-12 AT100 4PR": {"ILC-FM": 0.356, "073-FM": 0.057, "BEAD WIRE": 0.153, "LN-2530": 0.015, "1243-FM": 0.77, "LN-4554": 0.33, "1227-FM": 0.195, "NN-0111": 0.049, "1754-FM": 0.175, "TCC-FM": 0.136, "5061-FM": 3.35},
         "650-14 HT-60": {"ILC-FM": 0.756, "073-FM": 0.109, "BEAD WIRE": 0.341, "5493-FM": 0.068, "LN-2530": 0.021, "1243-FM": 1.694, "LN-4554": 0.725, "LN-4540": 0.151, "1227-FM": 0.674, "NN-0111": 0.027, "1754-FM": 0.236, "TCC-FM": 0.335, "5061-FM": 6.365},
         "7.50 R16C 120/110Q": {"BEAD WIRE": 0.499, "H811Y-FM": 1.264, "B458-FM": 1.72, "B163-FM": 0.413, "A268-FM": 0.778, "A517-FM": 0.28, "S156-FM": 1.683, "R37-FM": 2.599, "B460-FM": 1.286, "STEEL CORD 2+2x0,32 HT / 56": 0.938, "T6730-FM": 4.033, "T11-FM": 0.714, "1440 dtex x 2 / 105": 1.279, "940 dtex x 2 / 80": 0.286},
-        "FLAPS": {"GRG": 1.0},
-        "GRG": {"FLAPS": 1.0}
+        "FLAPS": {"GRG": 1.0}, "GRG": {"FLAPS": 1.0}
     }, orient='index').fillna(0)
 
-    # Full Recipe Dataset
     recipe_data = {
-        "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "ZINC OXIDE (Zinc Oxide 98%)": 0.0113, "NORMAL SULPHUR": 0.0181, "SMR-10 (sir-10)": 0.1394},
+        "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "ZINC OXIDE (Zinc Oxide 98%)": 0.0113, "NORMAL SULPHUR": 0.0181},
         "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "ZINC OXIDE (Zinc Oxide 98%)": 0.0210, "NORMAL SULPHUR": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
         "B458-FM": {"SMR-20 (SIR /SMR-20)": 0.2429, "BR 1220 (SKD-2)": 0.0972, "SBR 1712 (Kralex 1712)": 0.2004, "N-660 / GPF": 0.3353, "ZINC OXIDE (Zinc Oxide 98%)": 0.0146, "NORMAL SULPHUR": 0.0146, "SBR 1500 (Kralex 1500)": 0.0950},
-        "B460-FM": {"SMR-20 (SIR /SMR-20)": 0.5144, "N-326 / HAF-LS": 0.3189, "ZINC OXIDE (Zinc Oxide 98%)": 0.0360, "NORMAL SULPHUR": 0.0347, "SMR-10 (sir-10)": 0.0960},
+        "B460-FM": {"SMR-20 (SIR /SMR-20)": 0.5144, "N-326 / HAF-LS": 0.3189, "ZINC OXIDE (Zinc Oxide 98%)": 0.0360, "NORMAL SULPHUR": 0.0347},
         "H811Y-FM": {"SMR-20 (SIR /SMR-20)": 0.0488, "EXXON CHLOROBUTYL 1066": 0.4389, "N-660 / GPF": 0.2438, "ZINC OXIDE (Zinc Oxide 98%)": 0.0146, "NORMAL SULPHUR": 0.0037, "BUTYL RUBBER BK 1675 N": 0.2502},
         "R37-FM": {"SMR-20 (SIR /SMR-20)": 0.2002, "BR 1220 (SKD-2)": 0.3003, "N-339 / HAF-HS": 0.3504, "ZINC OXIDE (Zinc Oxide 98%)": 0.0150, "NORMAL SULPHUR": 0.0165, "SBR 1500 (Kralex 1500)": 0.1176},
         "S156-FM": {"SMR-20 (SIR /SMR-20)": 0.3078, "BR 1220 (SKD-2)": 0.1231, "SBR 1500 (Kralex 1500)": 0.1847, "N-339 / HAF-HS": 0.2093, "ZINC OXIDE (Zinc Oxide 98%)": 0.0154, "NORMAL SULPHUR": 0.0203, "SBR 1712 (Kralex 1712)": 0.1394},
-        "T11-FM": {"SMR-20 (SIR /SMR-20)": 0.6133, "N-339 / HAF-HS": 0.2576, "ZINC OXIDE (Zinc Oxide 98%)": 0.0184, "NORMAL SULPHUR": 0.0156, "SMR-10 (sir-10)": 0.0951},
+        "T11-FM": {"SMR-20 (SIR /SMR-20)": 0.6133, "N-339 / HAF-HS": 0.2576, "ZINC OXIDE (Zinc Oxide 98%)": 0.0184, "NORMAL SULPHUR": 0.0156},
         "T6730-FM": {"SMR-20 (SIR /SMR-20)": 0.0240, "BR 1220 (SKD-2)": 0.0719, "SBR 1500 (Kralex 1500)": 0.3837, "N-339 / HAF-HS": 0.3501, "ZINC OXIDE (Zinc Oxide 98%)": 0.0096, "NORMAL SULPHUR": 0.0086, "SBR 1712 (Kralex 1712)": 0.1521},
         "ILC-FM": {"SMR-20 (SIR /SMR-20)": 0.35, "BUTYL RUBBER BK 1675 N": 0.42, "EXXON CHLOROBUTYL 1066": 0.12, "N-660 / GPF": 0.08, "ZINC OXIDE (Zinc Oxide 98%)": 0.02, "NORMAL SULPHUR": 0.01},
         "KIP-FM": {"SMR-20 (SIR /SMR-20)": 0.45, "BR 1220 (SKD-2)": 0.15, "SBR 1500 (Kralex 1500)": 0.20, "N-330 / HAF": 0.15, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
         "LN-6647": {"SMR-20 (SIR /SMR-20)": 0.50, "SBR 1712 (Kralex 1712)": 0.25, "N-339 / HAF-HS": 0.20, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
-        "073-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "SMR-10 (sir-10)": 0.20, "N-326 / HAF-LS": 0.35, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
-        "5493-FM": {"SMR-20 (SIR /SMR-20)": 0.30, "SBR 1500 (Kralex 1500)": 0.30, "N-550 / FEF": 0.35, "NORMAL SULPHUR": 0.05},
-        "5447-FM": {"SMR-20 (SIR /SMR-20)": 0.38, "BR 1220 (SKD-2)": 0.22, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
-        "LN-2530": {"SMR-20 (SIR /SMR-20)": 0.55, "SBR 1500 (Kralex 1500)": 0.15, "N-375 / HAF-HS": 0.25, "NORMAL SULPHUR": 0.05},
-        "BOP-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "RSS-1 (Vietnam /Egypt)": 0.20, "N-550 / FEF": 0.35, "NORMAL SULPHUR": 0.05},
-        "BRC-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
-        "TCC-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "BR 1220 (SKD-2)": 0.20, "N-339 / HAF-HS": 0.25, "NORMAL SULPHUR": 0.05},
-        "SO 1481-FM": {"SMR-20 (SIR /SMR-20)": 0.35, "SBR 1500 (Kralex 1500)": 0.25, "N-660 / GPF": 0.35, "NORMAL SULPHUR": 0.05},
-        "TO 1221-FM": {"SMR-20 (SIR /SMR-20)": 0.52, "BR 1220 (SKD-2)": 0.18, "N-330 / HAF": 0.25, "NORMAL SULPHUR": 0.05},
-        "TO 1390-FM": {"SMR-20 (SIR /SMR-20)": 0.48, "SBR 1712 (Kralex 1712)": 0.22, "N-339 / HAF-HS": 0.25, "NORMAL SULPHUR": 0.05},
-        "5763-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
-        "5765-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
-        "5704 FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-660 / GPF": 0.45, "NORMAL SULPHUR": 0.05},
-        "1481 FM": {"SMR-20 (SIR /SMR-20)": 0.35, "SBR 1500 (Kralex 1500)": 0.25, "N-660 / GPF": 0.35, "NORMAL SULPHUR": 0.05},
-        "C-100-FM": {"BUTYL RUBBER BK 1675 N": 0.62, "N-330 / HAF": 0.34, "NORMAL SULPHUR": 0.04},
-        "C-200-FM": {"SMR-20 (SIR /SMR-20)": 0.66, "N-330 / HAF": 0.29, "NORMAL SULPHUR": 0.05},
-        "107-MA-FM": {"SBR 1500 (Kralex 1500)": 0.53, "N-330 / HAF": 0.20, "N-550 / FEF": 0.135, "BUTYL RUBBER BK 1675 N": 0.135},
+        "073-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "N-326 / HAF-LS": 0.35, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
         "BEAD WIRE": {"BIDE WIRE": 1.00},
         "STEEL CORD 2+2x0,32 HT / 56": {"STEEL CORD 2+2x0,32 HT / 56": 1.00},
-        "STEEL CORD 3x0,20+6x0,35HT": {"STEEL CORD 3x0,20+6x0,35HT": 1.00},
         "1440 dtex x 2 / 105": {"1440 dtex x 2 / 105": 1.00},
-        "940 dtex x 2 / 80": {"940 dtex x 2 / 80": 1.00},
-        "A268-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "049-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "044-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "086-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "015-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "048-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "04-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "2*0.3 Ht/ NT": {"STEEL CORD 2+2x0.25 NT": 1.00},
-        "054-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "1754-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "T3F-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "GT71-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "TFL-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "5061-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "TSW1-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "LN-6641": {"LN-6641": 1.00},
-        "LN-4554": {"LN-4554": 1.00},
-        "NN-0111": {"NN-0111": 1.00},
-        "1243-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "1227-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
-        "LN-4540": {"LN-4540": 1.00}
+        "940 dtex x 2 / 80": {"940 dtex x 2 / 80": 1.00}
     }
     return inventory_data, bom_data, recipe_data
 
 INV_DF, BOM_DATA, RECIPE_DATA = get_data()
 
-# --- HELPER FUNCTION FOR RM CALCULATION ---
-def calc_rm_requirements(targets_dict, days):
-    rm_totals = {}
-    for product, daily_qty in targets_dict.items():
-        if daily_qty > 0:
-            bom_row = BOM_DATA.loc[product]
-            for compound, comp_qty in bom_row.items():
-                if comp_qty > 0 and compound in RECIPE_DATA:
-                    for ingredient, ratio in RECIPE_DATA[compound].items():
-                        daily_rm = ratio * comp_qty * daily_qty
-                        monthly_rm = daily_rm * days
-                        
-                        if ingredient not in rm_totals:
-                            rm_totals[ingredient] = {"daily": 0.0, "monthly": 0.0}
-                        rm_totals[ingredient]["daily"] += daily_rm
-                        rm_totals[ingredient]["monthly"] += monthly_rm
-    return rm_totals
-
 # Initialize Session States
-if "annual_plan" not in st.session_state:
-    st.session_state["annual_plan"] = {}
-if "actual_plan" not in st.session_state:
-    st.session_state["actual_plan"] = {}
+if "annual_plan" not in st.session_state: st.session_state["annual_plan"] = {}
+if "actual_plan" not in st.session_state: st.session_state["actual_plan"] = {}
 
-# Styling function for DataFrames
-def color_deviation(val):
-    if val > 0:
-        return 'color: red; font-weight: bold' # Over consumption
-    elif val < 0:
-        return 'color: green; font-weight: bold' # Savings / Under consumption
-    return 'color: gray'
-
-# --- 3. CSS STYLING ---
-st.markdown("""
-    <style>
-    .compound-card { background-color: #f1f3f4; padding: 15px; border-radius: 10px; border-top: 4px solid #ff4b4b; margin-bottom: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- 4. UI LAYOUT ---
+# --- UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
-
 tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms", "📉 Actual vs Planned"])
 
 # --- TAB 1: PRODUCTION ---
 with tab1:
     selected_product = st.selectbox("1. Select Product Size", list(BOM_DATA.index))
-    st.markdown("---")
     row = BOM_DATA.loc[selected_product]
     compounds = row[row > 0].index.tolist()
     
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
-            st.markdown('<div class="compound-card">', unsafe_allow_html=True)
             st.write(f"#### {comp_name}")
             batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
             recipe = RECIPE_DATA.get(comp_name)
             if recipe:
                 for ing, val in recipe.items():
                     st.caption(f"{ing}: **{(val * batch):.2f} KG**")
-            st.markdown('</div>', unsafe_allow_html=True)
 
 # --- TAB 2: MONTHLY PLANNING ---
 with tab2:
-    st.header("Monthly Material Requirements Plan")
+    month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    selected_month = st.selectbox("1. Select Planning Month", month_names)
     
-    month_names = ["January", "February", "March", "April", "May", "June", 
-                   "July", "August", "September", "October", "November", "December"]
+    existing = st.session_state["annual_plan"].get(selected_month, {"targets": {}})
+    plan_products = st.multiselect("2. Select Products", list(BOM_DATA.index), default=list(existing["targets"].keys()))
     
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        selected_month = st.selectbox("1. Select Planning Month", month_names)
-        
-    existing_days = st.session_state["annual_plan"].get(selected_month, {}).get("days", 22)
-    existing_targets = st.session_state["annual_plan"].get(selected_month, {}).get("targets", {})
+    target_inputs = {}
+    cols = st.columns(3)
+    for i, p in enumerate(plan_products):
+        with cols[i % 3]:
+            target_inputs[p] = st.number_input(f"{p}", min_value=0, value=existing["targets"].get(p, 0), key=f"target_{p}")
     
-    with col2:
-        working_days = st.number_input(f"2. Working Days in {selected_month}", min_value=0, max_value=31, value=existing_days)
-
-    st.markdown("---")
-    
-    plan_products = st.multiselect(
-        f"3. Select Products to produce in {selected_month}", 
-        list(BOM_DATA.index), 
-        default=list(existing_targets.keys())
-    )
-    
-    if plan_products:
-        st.subheader(f"4. Define Daily Production Targets (Units per Day) for {selected_month}")
-        target_inputs = {}
-        
-        cols = st.columns(3)
-        for i, p in enumerate(plan_products):
-            with cols[i % 3]:
-                val = existing_targets.get(p, 0)
-                target_inputs[p] = st.number_input(f"{p}", min_value=0, value=val, key=f"target_{selected_month}_{p}")
-        
-        if st.button(f"Save & Generate Requirements for {selected_month}", type="primary"):
-            st.session_state["annual_plan"][selected_month] = {
-                "days": working_days,
-                "targets": target_inputs
-            }
-            st.success(f"Successfully updated targets for {selected_month}!")
-            st.info("Navigate to the 'Actual vs Planned' tab to compare this plan against reality.")
+    if st.button("Save Plan"):
+        st.session_state["annual_plan"][selected_month] = {"targets": target_inputs}
+        st.success(f"Plan saved for {selected_month}!")
 
 # --- TAB 3: INVENTORY & ALARMS ---
 with tab3:
-    st.header("Raw Material Inventory & Forecast Alarms")
-    daily_cons = st.number_input("Enter Average Daily Consumption (KG) for all items:", min_value=1.0, value=100.0)
-    
-    df_alarms = INV_DF.copy()
-    df_alarms["Daily Consumption"] = daily_cons
-    
-    for days in [15, 30, 60, 90, 120, 150]:
-        df_alarms[f"Req {days} Days"] = daily_cons * days
-    
-    for days in [15, 30, 60, 90, 120, 150]:
-        df_alarms[f"Alarm < {days}d"] = df_alarms["Ending"] < df_alarms[f"Req {days} Days"]
+    st.header("Raw Material Inventory")
+    st.dataframe(INV_DF, use_container_width=True)
 
-    st.dataframe(df_alarms.style.map(
-        lambda x: 'background-color: #ff9999' if x is True else 'background-color: #99ff99', 
-        subset=[col for col in df_alarms.columns if "Alarm" in col]
-    ), use_container_width=True)
-
-# --- TAB 4: ACTUAL VS PLANNED (NEW) ---
+# --- TAB 4: ACTUAL VS PLANNED ---
 with tab4:
     st.header("📉 Actual vs. Planned Performance")
-    st.markdown("Compare your real production data against the targets saved in your Monthly Plan.")
+    selected_month = st.selectbox("Select Month to Review", month_names, key="actual_rev")
     
-    month_names = ["January", "February", "March", "April", "May", "June", 
-                   "July", "August", "September", "October", "November", "December"]
-                   
-    selected_actual_month = st.selectbox("1. Select Month to Review", month_names, key="actual_month_select")
-    
-    if selected_actual_month not in st.session_state["annual_plan"]:
-        st.warning(f"No planned data found for {selected_actual_month}. Please create a plan in the 'Monthly Planning' tab first.")
-    else:
-        st.markdown(f"### Record Actuals for {selected_actual_month}")
-        planned_data = st.session_state["annual_plan"][selected_actual_month]
+    if selected_month in st.session_state["annual_plan"]:
+        planned = st.session_state["annual_plan"][selected_month]["targets"]
+        st.subheader("Enter Actual Production")
+        actuals = {}
+        for p, target in planned.items():
+            actuals[p] = st.number_input(f"Actual for {p} (Target: {target})", value=0, key=f"act_{p}")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            saved_actual_days = st.session_state["actual_plan"].get(selected_actual_month, {}).get("days", planned_data["days"])
-            actual_days = st.number_input(f"Actual Working Days in {selected_actual_month}", min_value=0, max_value=31, value=saved_actual_days, key=f"actual_days_{selected_actual_month}")
-            st.caption(f"Planned working days: {planned_data['days']}")
-            
-        with col2:
-            saved_actual_keys = list(st.session_state["actual_plan"].get(selected_actual_month, {}).get("targets", {}).keys())
-            default_keys = saved_actual_keys if saved_actual_keys else list(planned_data["targets"].keys())
-            
-            actual_products = st.multiselect(
-                "Products Actually Produced", 
-                list(BOM_DATA.index), 
-                default=default_keys,
-                key=f"actual_prod_{selected_actual_month}"
-            )
-            
-        if actual_products:
-            st.write("#### Enter Actual Daily Production (Units/Day)")
-            actual_targets = {}
-            cols = st.columns(3)
-            
-            for i, p in enumerate(actual_products):
-                with cols[i % 3]:
-                    planned_val = planned_data["targets"].get(p, 0)
-                    saved_val = st.session_state["actual_plan"].get(selected_actual_month, {}).get("targets", {}).get(p, planned_val)
-                    actual_targets[p] = st.number_input(f"{p}", min_value=0, value=saved_val, key=f"actual_target_{selected_actual_month}_{p}")
-                    st.caption(f"Planned target: {planned_val}")
-
-            if st.button(f"Calculate Deviations for {selected_actual_month}", type="primary"):
-                # Save Actuals to Memory
-                st.session_state["actual_plan"][selected_actual_month] = {
-                    "days": actual_days,
-                    "targets": actual_targets
-                }
-                
-                # --- MONTHLY DEVIATION CALCULATION ---
-                planned_rm_month = calc_rm_requirements(planned_data["targets"], planned_data["days"])
-                actual_rm_month = calc_rm_requirements(actual_targets, actual_days)
-                
-                # Combine into Report
-                all_ingredients = set(list(planned_rm_month.keys()) + list(actual_rm_month.keys()))
-                report_rows = []
-                
-                for ing in all_ingredients:
-                    p_daily = planned_rm_month.get(ing, {}).get("daily", 0.0)
-                    p_month = planned_rm_month.get(ing, {}).get("monthly", 0.0)
-                    
-                    a_daily = actual_rm_month.get(ing, {}).get("daily", 0.0)
-                    a_month = actual_rm_month.get(ing, {}).get("monthly", 0.0)
-                    
-                    report_rows.append({
-                        "Ingredient": ing,
-                        "Planned Daily (KG)": p_daily,
-                        "Actual Daily (KG)": a_daily,
-                        "Daily Deviation": a_daily - p_daily,
-                        "Planned Monthly (KG)": p_month,
-                        "Actual Monthly (KG)": a_month,
-                        "Monthly Deviation": a_month - p_month
-                    })
-                
-                df_month = pd.DataFrame(report_rows).set_index("Ingredient")
-                
-                st.markdown("---")
-                st.write(f"### 📊 {selected_actual_month} Raw Material Consumption Deviation")
-                st.info("Negative Deviation (Green) = Under Consumption / Savings. Positive Deviation (Red) = Over Consumption.")
-                
-                st.dataframe(df_month.style.format("{:,.2f}").map(color_deviation, subset=["Daily Deviation", "Monthly Deviation"]), use_container_width=True)
-                
-                # --- ANNUAL DEVIATION CALCULATION ---
-                st.write("### 📈 Annual Cumulative Deviation")
-                st.caption("This aggregates all months currently saved in your Planned and Actual memory banks.")
-                
-                annual_planned = {}
-                annual_actual = {}
-                
-                # Sum Planned
-                for m, p_data in st.session_state["annual_plan"].items():
-                    m_rm = calc_rm_requirements(p_data["targets"], p_data["days"])
-                    for ing, vals in m_rm.items():
-                        annual_planned[ing] = annual_planned.get(ing, 0) + vals["monthly"]
-                        
-                # Sum Actuals
-                for m, a_data in st.session_state["actual_plan"].items():
-                    a_rm = calc_rm_requirements(a_data["targets"], a_data["days"])
-                    for ing, vals in a_rm.items():
-                        annual_actual[ing] = annual_actual.get(ing, 0) + vals["monthly"]
-                
-                annual_rows = []
-                all_annual_ing = set(list(annual_planned.keys()) + list(annual_actual.keys()))
-                
-                for ing in all_annual_ing:
-                    p_annual = annual_planned.get(ing, 0.0)
-                    a_annual = annual_actual.get(ing, 0.0)
-                    annual_rows.append({
-                        "Ingredient": ing,
-                        "Annual Planned (KG)": p_annual,
-                        "Annual Actual (KG)": a_annual,
-                        "Annual Deviation": a_annual - p_annual
-                    })
-                    
-                df_annual = pd.DataFrame(annual_rows).set_index("Ingredient")
-                st.dataframe(df_annual.style.format("{:,.2f}").map(color_deviation, subset=["Annual Deviation"]), use_container_width=True)
+        if st.button("Calculate Variance"):
+            df_comp = pd.DataFrame({"Planned": planned, "Actual": actuals})
+            df_comp["Variance"] = df_comp["Actual"] - df_comp["Planned"]
+            st.dataframe(df_comp.style.applymap(lambda v: 'color: red' if v < 0 else 'color: green', subset=["Variance"]), use_container_width=True)
+    else:
+        st.warning("Please save a plan in the 'Monthly Planning' tab first.")
