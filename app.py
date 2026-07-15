@@ -115,7 +115,7 @@ BOM_DATA, RECIPE_DATA = get_data()
 # --- 3. CSS STYLING ---
 st.markdown("""
     <style>
-    .compound-card { background-color: #f1f3f4; padding: 20px; border-radius: 12px; border-top: 5px solid #ff4b4b; margin-bottom: 20px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+    .compound-card { background-color: #f1f3f4; padding: 15px; border-radius: 10px; border-top: 4px solid #ff4b4b; margin-bottom: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -130,12 +130,14 @@ with tab1:
     st.markdown("---")
     row = BOM_DATA.loc[selected_product]
     compounds = row[row > 0].index.tolist()
+    
+    # Use grid layout for compounds
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
             st.markdown('<div class="compound-card">', unsafe_allow_html=True)
             st.write(f"#### {comp_name}")
-            batch = st.number_input(f"Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
+            batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
             recipe = RECIPE_DATA.get(comp_name)
             if recipe:
                 for ing, val in recipe.items():
@@ -145,18 +147,16 @@ with tab1:
 # --- TAB 2: PLANNING ---
 with tab2:
     st.header("Monthly Material Requirements Plan")
-    
     month_names = ["January", "February", "March", "April", "May", "June", 
                    "July", "August", "September", "October", "November", "December"]
     
-    st.subheader("Set Working Days per Month")
-    col1, col2, col3, col4 = st.columns(4)
-    monthly_days = {}
-    for i, m in enumerate(month_names):
-        with [col1, col2, col3, col4][i % 4]:
-            monthly_days[m] = st.number_input(f"{m} Days", 0, 31, 22)
+    with st.expander("⚙️ Set Working Days per Month"):
+        cols = st.columns(4)
+        monthly_days = {}
+        for i, m in enumerate(month_names):
+            monthly_days[m] = cols[i % 4].number_input(f"{m} Days", 0, 31, 22)
             
-    plan_products = st.multiselect("Select Products", list(BOM_DATA.index))
+    plan_products = st.multiselect("Select Products for Planning", list(BOM_DATA.index))
     
     if plan_products:
         st.subheader("Define Daily Production Targets (Units per Day)")
@@ -164,43 +164,24 @@ with tab2:
         
         if st.button("Generate Monthly Requirement Report"):
             report_data = []
-            
             for m in month_names:
                 days = monthly_days[m]
                 for product, daily_target in target_inputs.items():
                     if daily_target > 0:
                         total_units = daily_target * days
                         bom_row = BOM_DATA.loc[product]
-                        
-                        # Calculate material breakdown
                         for compound, compound_qty in bom_row.items():
                             if compound_qty > 0 and compound in RECIPE_DATA:
                                 for ingredient, ratio in RECIPE_DATA[compound].items():
-                                    qty_required = ratio * compound_qty * total_units
                                     report_data.append({
                                         "Month": m,
-                                        "Product": product,
-                                        "Monthly Units (Pcs)": total_units,
                                         "Ingredient": ingredient,
-                                        "Total Required (KG)": qty_required
+                                        "Total Required (KG)": ratio * compound_qty * total_units
                                     })
             
             if report_data:
                 df_final = pd.DataFrame(report_data)
-                
-                # Pivot table to show materials per month
-                pivot_df = df_final.pivot_table(
-                    values="Total Required (KG)", 
-                    index=["Ingredient"], 
-                    columns=["Month"], 
-                    aggfunc="sum"
-                ).fillna(0)
-                
-                # Add a summary of total units per month
-                st.write("### Production Units Schedule")
-                units_df = pd.DataFrame(target_inputs, index=["Daily Target"]).T
-                for m in month_names: units_df[m] = units_df["Daily Target"] * monthly_days[m]
-                st.dataframe(units_df.drop(columns=["Daily Target"]), use_container_width=True)
+                pivot_df = df_final.pivot_table(values="Total Required (KG)", index="Ingredient", columns="Month", aggfunc="sum").fillna(0)
                 
                 st.write("### Total Material Requirement (KG) by Month")
                 st.dataframe(pivot_df.style.format("{:.2f}"), use_container_width=True)
