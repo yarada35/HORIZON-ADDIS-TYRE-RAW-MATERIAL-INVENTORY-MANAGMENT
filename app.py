@@ -93,9 +93,11 @@ def get_data():
         {"Material": "BIDE WIRE", "Beginning": 56131.55, "WIP": 56131.55, "Ending": 37421.03}
     ]).set_index("Material")
 
+    # Full BOM Dataset
     bom_data = pd.DataFrame.from_dict({
         "18.4-38 HT F-444,14PR": {"ILC-FM": 4.464, "073-FM": 1.196, "BEAD WIRE": 3.233, "5493-FM": 1.047, "5447-FM": 0.743, "LN-2530": 0.092, "1243-FM": 12.796, "LN-4554": 5.484, "LN-4540": 1.711, "1227-FM": 6.573, "NN-0111": 0.034, "TCC-FM": 0.62, "TSW1-FM": 8.704, "T3F-FM": 74.58},
         "1000-20 HT-90 16/18PR": {"ILC-FM": 2.39, "KIP-FM": 8.794, "LN-6647": 5.231, "073-FM": 0.671, "BEAD WIRE": 1.813, "5493-FM": 1.17, "5447-FM": 0.739, "LN-2530": 0.24, "BOP-FM": 3.217, "LN-6641": 1.114, "BRC-FM": 1.502, "1227-FM": 0.321, "NN-0111": 0.081, "T1R-FM": 15.311, "TCC-FM": 0.512, "TBR-FM": 4.644, "TSW1-FM": 2.88},
+        "107 MA": {"107 MA": 1.0},
         "1100-20 AT-20 18PR": {"ILC-FM": 2.286, "KIP-FM": 8.921, "LN-6647": 5.307, "073-FM": 0.707, "BEAD WIRE": 2.013, "5493-FM": 0.57, "5447-FM": 0.322, "LN-2530": 0.252, "BOP-FM": 2.659, "LN-6641": 1.034, "BRC-FM": 3.398, "1227-FM": 0.28, "NN-0111": 0.071, "TCC-FM": 0.74, "TSW1-FM": 2.45, "TO 1221-FM": 14.0, "TO 1390-FM": 5.751},
         "1100-20 HT-90 16/18PR": {"ILC-FM": 2.566, "KIP-FM": 9.058, "LN-6647": 5.389, "073-FM": 0.671, "BEAD WIRE": 1.813, "5493-FM": 1.17, "5447-FM": 0.739, "LN-2530": 0.244, "BOP-FM": 3.388, "LN-6641": 1.181, "BRC-FM": 1.546, "1227-FM": 0.37, "NN-0111": 0.094, "T1R-FM": 13.136, "TCC-FM": 0.54, "TBR-FM": 7.07, "TSW1-FM": 2.931},
         "12.4-24 8PR HT-F-444": {"ILC-FM": 2.436, "073-FM": 0.381, "BEAD WIRE": 1.085, "5493-FM": 0.67, "5447-FM": 0.389, "LN-2530": 0.159, "1243-FM": 2.872, "LN-4554": 1.229, "LN-4540": 0.737, "1227-FM": 3.114, "NN-0111": 0.087, "1754-FM": 1.276, "TSW1-FM": 3.47, "T3F-FM": 26.56},
@@ -125,80 +127,125 @@ def get_data():
         "550/60-22.5 HT-FT-777 16/18PR": {"ILC-FM": 5.495, "KIP-FM": 8.996, "LN-6647": 5.352, "073-FM": 0.877, "BEAD WIRE": 2.371, "5493-FM": 0.167, "5447-FM": 0.276, "LN-2530": 0.196, "BOP-FM": 4.782, "LN-6641": 1.86, "BRC-FM": 1.633, "1227-FM": 0.333, "NN-0111": 0.084, "TCC-FM": 0.62, "TSW1-FM": 8.2, "T3F-FM": 44.08},
         "560-13 AT100 4PR": {"ILC-FM": 0.378, "073-FM": 0.06, "BEAD WIRE": 0.168, "LN-2530": 0.016, "1243-FM": 0.829, "LN-4554": 0.355, "1227-FM": 0.132, "NN-0111": 0.034, "1754-FM": 0.189, "TCC-FM": 0.171, "5061-FM": 4.099},
         "560-15 AT100 4PR": {"ILC-FM": 0.416, "073-FM": 0.071, "BEAD WIRE": 0.191, "LN-2530": 0.019, "1243-FM": 0.943, "LN-4554": 0.404, "1227-FM": 0.146, "NN-0111": 0.037, "1754-FM": 0.216, "TCC-FM": 0.17, "5061-FM": 4.58},
+        "5763 BLADER": {"5763 FM": 1.0},
+        "5765 BLADDER": {"5765 FM": 1.0},
         "6.00-9 HT-I-222 12PR": {"ILC-FM": 0.428, "KIP-FM": 1.06, "LN-6647": 0.631, "073-FM": 0.133, "BEAD WIRE": 0.361, "LN-2530": 0.038, "BOP-FM": 0.393, "LN-6641": 0.131, "BRC-FM": 0.385, "1227-FM": 0.109, "NN-0111": 0.027, "TCC-FM": 0.202, "TFL-FM": 5.998},
         "6.50-10 HT-I-222 12PR": {"ILC-FM": 0.551, "KIP-FM": 1.27, "LN-6647": 0.756, "073-FM": 0.144, "BEAD WIRE": 0.39, "LN-2530": 0.046, "BOP-FM": 0.52, "LN-6641": 0.117, "BRC-FM": 0.47, "1227-FM": 0.122, "NN-0111": 0.031, "TCC-FM": 0.253, "TFL-FM": 7.547},
         "600-12 AT100 4PR": {"ILC-FM": 0.356, "073-FM": 0.057, "BEAD WIRE": 0.153, "LN-2530": 0.015, "1243-FM": 0.77, "LN-4554": 0.33, "1227-FM": 0.195, "NN-0111": 0.049, "1754-FM": 0.175, "TCC-FM": 0.136, "5061-FM": 3.35},
         "650-14 HT-60": {"ILC-FM": 0.756, "073-FM": 0.109, "BEAD WIRE": 0.341, "5493-FM": 0.068, "LN-2530": 0.021, "1243-FM": 1.694, "LN-4554": 0.725, "LN-4540": 0.151, "1227-FM": 0.674, "NN-0111": 0.027, "1754-FM": 0.236, "TCC-FM": 0.335, "5061-FM": 6.365},
         "7.50 R16C 120/110Q": {"BEAD WIRE": 0.499, "H811Y-FM": 1.264, "B458-FM": 1.72, "B163-FM": 0.413, "A268-FM": 0.778, "A517-FM": 0.28, "S156-FM": 1.683, "R37-FM": 2.599, "B460-FM": 1.286, "STEEL CORD 2+2x0,32 HT / 56": 0.938, "T6730-FM": 4.033, "T11-FM": 0.714, "1440 dtex x 2 / 105": 1.279, "940 dtex x 2 / 80": 0.286},
-        "FLAPS": {"GRG": 1.0}, "GRG": {"FLAPS": 1.0}
+        "FLAPS": {"GRG": 1.0},
+        "GRG": {"FLAPS": 1.0}
     }, orient='index').fillna(0)
 
+    # Full Recipe Dataset
     recipe_data = {
-        "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "ZINC OXIDE (Zinc Oxide 98%)": 0.0113, "NORMAL SULPHUR": 0.0181},
+        "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "ZINC OXIDE (Zinc Oxide 98%)": 0.0113, "NORMAL SULPHUR": 0.0181, "SMR-10 (sir-10)": 0.1394},
         "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "ZINC OXIDE (Zinc Oxide 98%)": 0.0210, "NORMAL SULPHUR": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
         "B458-FM": {"SMR-20 (SIR /SMR-20)": 0.2429, "BR 1220 (SKD-2)": 0.0972, "SBR 1712 (Kralex 1712)": 0.2004, "N-660 / GPF": 0.3353, "ZINC OXIDE (Zinc Oxide 98%)": 0.0146, "NORMAL SULPHUR": 0.0146, "SBR 1500 (Kralex 1500)": 0.0950},
-        "B460-FM": {"SMR-20 (SIR /SMR-20)": 0.5144, "N-326 / HAF-LS": 0.3189, "ZINC OXIDE (Zinc Oxide 98%)": 0.0360, "NORMAL SULPHUR": 0.0347},
+        "B460-FM": {"SMR-20 (SIR /SMR-20)": 0.5144, "N-326 / HAF-LS": 0.3189, "ZINC OXIDE (Zinc Oxide 98%)": 0.0360, "NORMAL SULPHUR": 0.0347, "SMR-10 (sir-10)": 0.0960},
         "H811Y-FM": {"SMR-20 (SIR /SMR-20)": 0.0488, "EXXON CHLOROBUTYL 1066": 0.4389, "N-660 / GPF": 0.2438, "ZINC OXIDE (Zinc Oxide 98%)": 0.0146, "NORMAL SULPHUR": 0.0037, "BUTYL RUBBER BK 1675 N": 0.2502},
         "R37-FM": {"SMR-20 (SIR /SMR-20)": 0.2002, "BR 1220 (SKD-2)": 0.3003, "N-339 / HAF-HS": 0.3504, "ZINC OXIDE (Zinc Oxide 98%)": 0.0150, "NORMAL SULPHUR": 0.0165, "SBR 1500 (Kralex 1500)": 0.1176},
         "S156-FM": {"SMR-20 (SIR /SMR-20)": 0.3078, "BR 1220 (SKD-2)": 0.1231, "SBR 1500 (Kralex 1500)": 0.1847, "N-339 / HAF-HS": 0.2093, "ZINC OXIDE (Zinc Oxide 98%)": 0.0154, "NORMAL SULPHUR": 0.0203, "SBR 1712 (Kralex 1712)": 0.1394},
-        "T11-FM": {"SMR-20 (SIR /SMR-20)": 0.6133, "N-339 / HAF-HS": 0.2576, "ZINC OXIDE (Zinc Oxide 98%)": 0.0184, "NORMAL SULPHUR": 0.0156},
+        "T11-FM": {"SMR-20 (SIR /SMR-20)": 0.6133, "N-339 / HAF-HS": 0.2576, "ZINC OXIDE (Zinc Oxide 98%)": 0.0184, "NORMAL SULPHUR": 0.0156, "SMR-10 (sir-10)": 0.0951},
         "T6730-FM": {"SMR-20 (SIR /SMR-20)": 0.0240, "BR 1220 (SKD-2)": 0.0719, "SBR 1500 (Kralex 1500)": 0.3837, "N-339 / HAF-HS": 0.3501, "ZINC OXIDE (Zinc Oxide 98%)": 0.0096, "NORMAL SULPHUR": 0.0086, "SBR 1712 (Kralex 1712)": 0.1521},
         "ILC-FM": {"SMR-20 (SIR /SMR-20)": 0.35, "BUTYL RUBBER BK 1675 N": 0.42, "EXXON CHLOROBUTYL 1066": 0.12, "N-660 / GPF": 0.08, "ZINC OXIDE (Zinc Oxide 98%)": 0.02, "NORMAL SULPHUR": 0.01},
         "KIP-FM": {"SMR-20 (SIR /SMR-20)": 0.45, "BR 1220 (SKD-2)": 0.15, "SBR 1500 (Kralex 1500)": 0.20, "N-330 / HAF": 0.15, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
         "LN-6647": {"SMR-20 (SIR /SMR-20)": 0.50, "SBR 1712 (Kralex 1712)": 0.25, "N-339 / HAF-HS": 0.20, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
-        "073-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "N-326 / HAF-LS": 0.35, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
+        "073-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "SMR-10 (sir-10)": 0.20, "N-326 / HAF-LS": 0.35, "ZINC OXIDE (Zinc Oxide 98%)": 0.03, "NORMAL SULPHUR": 0.02},
+        "5493-FM": {"SMR-20 (SIR /SMR-20)": 0.30, "SBR 1500 (Kralex 1500)": 0.30, "N-550 / FEF": 0.35, "NORMAL SULPHUR": 0.05},
+        "5447-FM": {"SMR-20 (SIR /SMR-20)": 0.38, "BR 1220 (SKD-2)": 0.22, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
+        "LN-2530": {"SMR-20 (SIR /SMR-20)": 0.55, "SBR 1500 (Kralex 1500)": 0.15, "N-375 / HAF-HS": 0.25, "NORMAL SULPHUR": 0.05},
+        "BOP-FM": {"SMR-20 (SIR /SMR-20)": 0.40, "RSS-1 (Vietnam /Egypt)": 0.20, "N-550 / FEF": 0.35, "NORMAL SULPHUR": 0.05},
+        "BRC-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
+        "TCC-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "BR 1220 (SKD-2)": 0.20, "N-339 / HAF-HS": 0.25, "NORMAL SULPHUR": 0.05},
+        "SO 1481-FM": {"SMR-20 (SIR /SMR-20)": 0.35, "SBR 1500 (Kralex 1500)": 0.25, "N-660 / GPF": 0.35, "NORMAL SULPHUR": 0.05},
+        "TO 1221-FM": {"SMR-20 (SIR /SMR-20)": 0.52, "BR 1220 (SKD-2)": 0.18, "N-330 / HAF": 0.25, "NORMAL SULPHUR": 0.05},
+        "TO 1390-FM": {"SMR-20 (SIR /SMR-20)": 0.48, "SBR 1712 (Kralex 1712)": 0.22, "N-339 / HAF-HS": 0.25, "NORMAL SULPHUR": 0.05},
+        "5763-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
+        "5765-FM": {"SMR-20 (SIR /SMR-20)": 0.60, "N-330 / HAF": 0.35, "NORMAL SULPHUR": 0.05},
+        "5704 FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-660 / GPF": 0.45, "NORMAL SULPHUR": 0.05},
+        "1481 FM": {"SMR-20 (SIR /SMR-20)": 0.35, "SBR 1500 (Kralex 1500)": 0.25, "N-660 / GPF": 0.35, "NORMAL SULPHUR": 0.05},
+        "C-100-FM": {"BUTYL RUBBER BK 1675 N": 0.62, "N-330 / HAF": 0.34, "NORMAL SULPHUR": 0.04},
+        "C-200-FM": {"SMR-20 (SIR /SMR-20)": 0.66, "N-330 / HAF": 0.29, "NORMAL SULPHUR": 0.05},
+        "107-MA-FM": {"SBR 1500 (Kralex 1500)": 0.53, "N-330 / HAF": 0.20, "N-550 / FEF": 0.135, "BUTYL RUBBER BK 1675 N": 0.135},
         "BEAD WIRE": {"BIDE WIRE": 1.00},
         "STEEL CORD 2+2x0,32 HT / 56": {"STEEL CORD 2+2x0,32 HT / 56": 1.00},
+        "STEEL CORD 3x0,20+6x0,35HT": {"STEEL CORD 3x0,20+6x0,35HT": 1.00},
         "1440 dtex x 2 / 105": {"1440 dtex x 2 / 105": 1.00},
-        "940 dtex x 2 / 80": {"940 dtex x 2 / 80": 1.00}
+        "940 dtex x 2 / 80": {"940 dtex x 2 / 80": 1.00},
+        "A268-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "049-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "044-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "086-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "015-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "048-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "04-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "2*0.3 Ht/ NT": {"STEEL CORD 2+2x0.25 NT": 1.00},
+        "054-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "1754-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "T3F-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "GT71-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "TFL-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "5061-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "TSW1-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "LN-6641": {"LN-6641": 1.00},
+        "LN-4554": {"LN-4554": 1.00},
+        "NN-0111": {"NN-0111": 1.00},
+        "1243-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "1227-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
+        "LN-4540": {"LN-4540": 1.00}
     }
     return inventory_data, bom_data, recipe_data
 
 INV_DF, BOM_DATA, RECIPE_DATA = get_data()
 
 # Initialize Session States
-if "annual_plan" not in st.session_state: st.session_state["annual_plan"] = {}
-if "actual_plan" not in st.session_state: st.session_state["actual_plan"] = {}
+if "annual_plan" not in st.session_state:
+    st.session_state["annual_plan"] = {}
+if "actual_production" not in st.session_state:
+    st.session_state["actual_production"] = {}
 
-# --- UI LAYOUT ---
+# --- 4. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
 tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms", "📉 Actual vs Planned"])
 
 # --- TAB 1: PRODUCTION ---
 with tab1:
     selected_product = st.selectbox("1. Select Product Size", list(BOM_DATA.index))
-    row = BOM_DATA.loc[selected_product]
-    compounds = row[row > 0].index.tolist()
-    
+    compounds = BOM_DATA.loc[selected_product]
+    compounds = compounds[compounds > 0].index.tolist()
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
-            st.write(f"#### {comp_name}")
+            st.markdown(f"**{comp_name}**")
             batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
             recipe = RECIPE_DATA.get(comp_name)
             if recipe:
                 for ing, val in recipe.items():
-                    st.caption(f"{ing}: **{(val * batch):.2f} KG**")
+                    st.caption(f"{ing}: {(val * batch):.2f} KG")
 
 # --- TAB 2: MONTHLY PLANNING ---
 with tab2:
+    st.header("Monthly Material Requirements Plan")
     month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    selected_month = st.selectbox("1. Select Planning Month", month_names)
+    selected_month = st.selectbox("Select Planning Month", month_names)
     
-    existing = st.session_state["annual_plan"].get(selected_month, {"targets": {}})
-    plan_products = st.multiselect("2. Select Products", list(BOM_DATA.index), default=list(existing["targets"].keys()))
+    # Pre-fill
+    plan_data = st.session_state["annual_plan"].get(selected_month, {"targets": {}})
+    plan_products = st.multiselect("Select Products to Produce", list(BOM_DATA.index), default=list(plan_data["targets"].keys()))
     
     target_inputs = {}
     cols = st.columns(3)
     for i, p in enumerate(plan_products):
         with cols[i % 3]:
-            target_inputs[p] = st.number_input(f"{p}", min_value=0, value=existing["targets"].get(p, 0), key=f"target_{p}")
+            target_inputs[p] = st.number_input(f"Target for {p}", value=plan_data["targets"].get(p, 0))
     
-    if st.button("Save Plan"):
+    if st.button("Save Monthly Plan"):
         st.session_state["annual_plan"][selected_month] = {"targets": target_inputs}
-        st.success(f"Plan saved for {selected_month}!")
+        st.success("Plan saved!")
 
-# --- TAB 3: INVENTORY & ALARMS ---
+# --- TAB 3: INVENTORY ---
 with tab3:
     st.header("Raw Material Inventory")
     st.dataframe(INV_DF, use_container_width=True)
@@ -206,18 +253,20 @@ with tab3:
 # --- TAB 4: ACTUAL VS PLANNED ---
 with tab4:
     st.header("📉 Actual vs. Planned Performance")
-    selected_month = st.selectbox("Select Month to Review", month_names, key="actual_rev")
+    selected_month = st.selectbox("Select Month to Review", ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], key="review_month")
     
     if selected_month in st.session_state["annual_plan"]:
-        planned = st.session_state["annual_plan"][selected_month]["targets"]
-        st.subheader("Enter Actual Production")
-        actuals = {}
-        for p, target in planned.items():
-            actuals[p] = st.number_input(f"Actual for {p} (Target: {target})", value=0, key=f"act_{p}")
+        targets = st.session_state["annual_plan"][selected_month]["targets"]
+        st.subheader(f"Input Actual Production for {selected_month}")
         
+        actuals = {}
+        for prod, target in targets.items():
+            actuals[prod] = st.number_input(f"Actual units for {prod} (Target: {target})", value=0)
+            
         if st.button("Calculate Variance"):
-            df_comp = pd.DataFrame({"Planned": planned, "Actual": actuals})
-            df_comp["Variance"] = df_comp["Actual"] - df_comp["Planned"]
-            st.dataframe(df_comp.style.applymap(lambda v: 'color: red' if v < 0 else 'color: green', subset=["Variance"]), use_container_width=True)
+            for prod, actual in actuals.items():
+                variance = actual - targets.get(prod, 0)
+                color = "green" if variance >= 0 else "red"
+                st.markdown(f"{prod}: Target {targets[prod]} | Actual {actual} | Variance: <span style='color:{color}'>{variance}</span>", unsafe_allow_html=True)
     else:
         st.warning("Please save a plan in the 'Monthly Planning' tab first.")
