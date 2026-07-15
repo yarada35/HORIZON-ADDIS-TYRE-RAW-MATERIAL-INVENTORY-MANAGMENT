@@ -146,37 +146,44 @@ with tab1:
 with tab2:
     st.header("Aggregated Material Planning Report")
     
-    col_a, col_b = st.columns(2)
-    with col_a:
-        plan_products = st.multiselect("Select Products", list(BOM_DATA.index))
-    with col_b:
-        daily_target = st.number_input("Target Units per Day", 1, 10000, 30)
+    plan_products = st.multiselect("Select Products", list(BOM_DATA.index))
     
-    if st.button("Generate Requirement Report"):
-        if plan_products:
+    if plan_products:
+        st.subheader("Define Daily Production Targets (Units)")
+        target_inputs = {}
+        cols = st.columns(3)
+        for i, product in enumerate(plan_products):
+            with cols[i % 3]:
+                target_inputs[product] = st.number_input(f"{product}", 0, 1000, 30)
+        
+        if st.button("Generate Requirement Report"):
             DAYS_PER_MONTH = 22
             MONTHS_PER_YEAR = 12
             
             totals = {}
             
-            for product in plan_products:
-                bom_row = BOM_DATA.loc[product]
-                for compound, compound_qty in bom_row.items():
-                    if compound_qty > 0 and compound in RECIPE_DATA:
-                        for ingredient, ratio in RECIPE_DATA[compound].items():
-                            per_unit = ratio * compound_qty
-                            
-                            if ingredient not in totals:
-                                totals[ingredient] = {"Daily": 0.0, "Monthly": 0.0, "Annually": 0.0}
-                            
-                            totals[ingredient]["Daily"] += (per_unit * daily_target)
-                            totals[ingredient]["Monthly"] += (per_unit * daily_target * DAYS_PER_MONTH)
-                            totals[ingredient]["Annually"] += (per_unit * daily_target * DAYS_PER_MONTH * MONTHS_PER_YEAR)
+            for product, daily_target in target_inputs.items():
+                if daily_target > 0:
+                    bom_row = BOM_DATA.loc[product]
+                    for compound, compound_qty in bom_row.items():
+                        if compound_qty > 0 and compound in RECIPE_DATA:
+                            for ingredient, ratio in RECIPE_DATA[compound].items():
+                                per_unit = ratio * compound_qty
+                                
+                                if ingredient not in totals:
+                                    totals[ingredient] = {"Daily": 0.0, "Monthly": 0.0, "Annually": 0.0}
+                                
+                                totals[ingredient]["Daily"] += (per_unit * daily_target)
+                                totals[ingredient]["Monthly"] += (per_unit * daily_target * DAYS_PER_MONTH)
+                                totals[ingredient]["Annually"] += (per_unit * daily_target * DAYS_PER_MONTH * MONTHS_PER_YEAR)
             
-            df_report = pd.DataFrame.from_dict(totals, orient='index')
-            st.dataframe(df_report.style.format("{:.2f}"), use_container_width=True)
-            
-            csv = df_report.to_csv().encode('utf-8')
-            st.download_button("Download Report", csv, "aggregate_report.csv", "text/csv")
-        else:
-            st.warning("Please select products to plan.")
+            if totals:
+                df_report = pd.DataFrame.from_dict(totals, orient='index')
+                st.dataframe(df_report.style.format("{:.2f}"), use_container_width=True)
+                
+                csv = df_report.to_csv().encode('utf-8')
+                st.download_button("Download Report", csv, "aggregate_report.csv", "text/csv")
+            else:
+                st.info("No materials to calculate. Ensure products have valid targets.")
+    else:
+        st.warning("Please select products to plan.")
