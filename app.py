@@ -7,6 +7,18 @@ st.set_page_config(page_title="Horizon Production System", layout="wide")
 # --- 2. DATA CONFIGURATION ---
 @st.cache_data
 def get_data():
+    # Inventory Dataset
+    inventory_data = pd.DataFrame([
+        {"Material": "SMR-20 (SIR /SMR-20)", "Beginning": 708517.13, "WIP": 708517.13, "Ending": 472344.8},
+        {"Material": "BEBEKA RUBBER (SMR-20)", "Beginning": 1022.51, "WIP": 1022.51, "Ending": 681.67},
+        {"Material": "BR 1220 (SKD-2)", "Beginning": 91616.55, "WIP": 91616.55, "Ending": 61077.7},
+        {"Material": "SBR 1500 (Kralex 1500)", "Beginning": 35994.64, "WIP": 35994.64, "Ending": 23996.43},
+        {"Material": "BUTYL RUBBER BK 1675 N", "Beginning": 1748.18, "WIP": 1748.18, "Ending": 1165.45},
+        {"Material": "STEEL CORD 2+2x0,32 HT / 56", "Beginning": 13605.78, "WIP": 13605.78, "Ending": 9070.52},
+        {"Material": "BIDE WIRE", "Beginning": 56131.55, "WIP": 56131.55, "Ending": 37421.03}
+    ]).set_index("Material")
+
+    # Full BOM Dataset
     bom_data = pd.DataFrame.from_dict({
         "18.4-38 HT F-444,14PR": {"ILC-FM": 4.464, "073-FM": 1.196, "BEAD WIRE": 3.233, "5493-FM": 1.047, "5447-FM": 0.743, "LN-2530": 0.092, "1243-FM": 12.796, "LN-4554": 5.484, "LN-4540": 1.711, "1227-FM": 6.573, "NN-0111": 0.034, "TCC-FM": 0.62, "TSW1-FM": 8.704, "T3F-FM": 74.58},
         "1000-20 HT-90 16/18PR": {"ILC-FM": 2.39, "KIP-FM": 8.794, "LN-6647": 5.231, "073-FM": 0.671, "BEAD WIRE": 1.813, "5493-FM": 1.17, "5447-FM": 0.739, "LN-2530": 0.24, "BOP-FM": 3.217, "LN-6641": 1.114, "BRC-FM": 1.502, "1227-FM": 0.321, "NN-0111": 0.081, "T1R-FM": 15.311, "TCC-FM": 0.512, "TBR-FM": 4.644, "TSW1-FM": 2.88},
@@ -51,6 +63,7 @@ def get_data():
         "GRG": {"FLAPS": 1.0}
     }, orient='index').fillna(0)
 
+    # Full Recipe Dataset
     recipe_data = {
         "A517-FM": {"SMR-20 (SIR /SMR-20)": 0.1133, "SBR 1500 (Kralex 1500)": 0.2645, "BUTYL RUBBER BK 1675 N": 0.0378, "N-660 / GPF": 0.4156, "Zinc Oxide": 0.0113, "Sulfur": 0.0181, "SMR-10 (sir-10)": 0.1394},
         "B163-FM": {"SMR-20 (SIR /SMR-20)": 0.4199, "BR 1220 (SKD-2)": 0.1050, "N-326 / HAF-LS": 0.2887, "Zinc Oxide": 0.0210, "Sulfur": 0.0231, "SBR 1712 (Kralex 1712)": 0.1423},
@@ -108,9 +121,9 @@ def get_data():
         "1227-FM": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50},
         "LN-4540": {"SMR-20 (SIR /SMR-20)": 0.50, "N-330 / HAF": 0.50}
     }
-    return bom_data, recipe_data
+    return inventory_data, bom_data, recipe_data
 
-BOM_DATA, RECIPE_DATA = get_data()
+INV_DF, BOM_DATA, RECIPE_DATA = get_data()
 
 # --- 3. CSS STYLING ---
 st.markdown("""
@@ -120,9 +133,9 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- 4. UI LAYOUT ---
-st.title("🏭 HORIZON ADDIS TYRE: Production Dashboard")
+st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
 
-tab1, tab2 = st.tabs(["📊 Real-time Production", "📅 Material Planning"])
+tab1, tab2, tab3 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms"])
 
 # --- TAB 1: PRODUCTION ---
 with tab1:
@@ -131,7 +144,7 @@ with tab1:
     row = BOM_DATA.loc[selected_product]
     compounds = row[row > 0].index.tolist()
     
-    # Use grid layout for compounds
+    # Grid layout for compounds
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
@@ -144,7 +157,7 @@ with tab1:
                     st.caption(f"{ing}: **{(val * batch):.2f} KG**")
             st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TAB 2: PLANNING ---
+# --- TAB 2: MONTHLY PLANNING ---
 with tab2:
     st.header("Monthly Material Requirements Plan")
     month_names = ["January", "February", "March", "April", "May", "June", 
@@ -188,3 +201,26 @@ with tab2:
                 
                 csv = pivot_df.to_csv().encode('utf-8')
                 st.download_button("Download Material Report", csv, "monthly_requirements.csv", "text/csv")
+
+# --- TAB 3: INVENTORY & ALARMS ---
+with tab3:
+    st.header("Raw Material Inventory & Forecast Alarms")
+    daily_cons = st.number_input("Enter Average Daily Consumption (KG) for all items:", min_value=1.0, value=100.0)
+    
+    # Calculate requirements
+    df_alarms = INV_DF.copy()
+    df_alarms["Daily Consumption"] = daily_cons
+    
+    # Days needed
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Req {days} Days"] = daily_cons * days
+    
+    # Alarms
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Alarm < {days}d"] = df_alarms["Ending"] < df_alarms[f"Req {days} Days"]
+
+    # Display with conditional formatting
+    st.dataframe(df_alarms.style.map(
+        lambda x: 'background-color: #ff9999' if x is True else 'background-color: #99ff99', 
+        subset=[col for col in df_alarms.columns if "Alarm" in col]
+    ), use_container_width=True)
