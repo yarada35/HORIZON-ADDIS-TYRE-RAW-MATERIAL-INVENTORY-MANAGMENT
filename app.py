@@ -7,7 +7,7 @@ st.set_page_config(page_title="Horizon Production System", layout="wide")
 # --- 2. DATA CONFIGURATION ---
 @st.cache_data
 def get_data():
-    # Complete Inventory Dataset updated from provided sheet
+    # Complete Inventory Dataset
     inventory_data = pd.DataFrame([
         # --- RUBBERS & POLYMERS ---
         {"Material": "SMR-20 (SIR /SMR-20)", "Beginning": 708517.13, "WIP": 708517.13, "Ending": 472344.8},
@@ -217,6 +217,10 @@ def get_data():
 
 INV_DF, BOM_DATA, RECIPE_DATA = get_data()
 
+# Initialize Session State for the Annual Plan
+if "annual_plan" not in st.session_state:
+    st.session_state["annual_plan"] = {}
+
 # --- 3. CSS STYLING ---
 st.markdown("""
     <style>
@@ -236,7 +240,6 @@ with tab1:
     row = BOM_DATA.loc[selected_product]
     compounds = row[row > 0].index.tolist()
     
-    # Grid layout for compounds
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
@@ -249,31 +252,64 @@ with tab1:
                     st.caption(f"{ing}: **{(val * batch):.2f} KG**")
             st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TAB 2: MONTHLY PLANNING ---
+# --- TAB 2: MONTHLY PLANNING (UPDATED) ---
 with tab2:
     st.header("Monthly Material Requirements Plan")
+    
+    # 1. Month Dropdown
     month_names = ["January", "February", "March", "April", "May", "June", 
                    "July", "August", "September", "October", "November", "December"]
     
-    with st.expander("⚙️ Set Working Days per Month"):
-        cols = st.columns(4)
-        monthly_days = {}
-        for i, m in enumerate(month_names):
-            monthly_days[m] = cols[i % 4].number_input(f"{m} Days", 0, 31, 22)
-            
-    plan_products = st.multiselect("Select Products for Planning", list(BOM_DATA.index))
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        selected_month = st.selectbox("1. Select Planning Month", month_names)
+        
+    # Check if we already have data saved for this month to pre-fill inputs
+    existing_days = st.session_state["annual_plan"].get(selected_month, {}).get("days", 22)
+    existing_targets = st.session_state["annual_plan"].get(selected_month, {}).get("targets", {})
+    
+    with col2:
+        # 2. Number of working days for specific month
+        working_days = st.number_input(f"2. Working Days in {selected_month}", min_value=0, max_value=31, value=existing_days)
+
+    st.markdown("---")
+    
+    # 3. Select products for specific month
+    plan_products = st.multiselect(
+        f"3. Select Products to produce in {selected_month}", 
+        list(BOM_DATA.index), 
+        default=list(existing_targets.keys())
+    )
     
     if plan_products:
-        st.subheader("Define Daily Production Targets (Units per Day)")
-        target_inputs = {p: st.number_input(f"{p}", 0, 1000, 30, key=f"target_{p}") for p in plan_products}
+        st.subheader(f"4. Define Daily Production Targets (Units per Day) for {selected_month}")
+        target_inputs = {}
         
-        if st.button("Generate Monthly Requirement Report"):
+        # Create input fields for daily demand dynamically
+        cols = st.columns(3)
+        for i, p in enumerate(plan_products):
+            with cols[i % 3]:
+                val = existing_targets.get(p, 0)
+                # Unique key ensures Streamlit doesn't mix inputs when you change months
+                target_inputs[p] = st.number_input(f"{p}", min_value=0, value=val, key=f"target_{selected_month}_{p}")
+        
+        # 5. Save to Annual Plan & Calculate
+        if st.button(f"Save & Generate Requirements for {selected_month}", type="primary"):
+            
+            # Save the month's data into the session memory
+            st.session_state["annual_plan"][selected_month] = {
+                "days": working_days,
+                "targets": target_inputs
+            }
+            st.success(f"Successfully updated targets for {selected_month}!")
+            
+            # Recalculate everything currently in memory
             report_data = []
-            for m in month_names:
-                days = monthly_days[m]
-                for product, daily_target in target_inputs.items():
+            for m, plan_data in st.session_state["annual_plan"].items():
+                m_days = plan_data["days"]
+                for product, daily_target in plan_data["targets"].items():
                     if daily_target > 0:
-                        total_units = daily_target * days
+                        total_units = daily_target * m_days
                         bom_row = BOM_DATA.loc[product]
                         for compound, compound_qty in bom_row.items():
                             if compound_qty > 0 and compound in RECIPE_DATA:
@@ -286,32 +322,51 @@ with tab2:
             
             if report_data:
                 df_final = pd.DataFrame(report_data)
+                
+                st.markdown("---")
+                
+                # --- Specific Month Display ---
+                df_month = df_final[df_final["Month"] == selected_month]
+                if not df_month.empty:
+                    month_summary = df_month.groupby("Ingredient")["Total Required (KG)"].sum().reset_index()
+                    st.write(f"### 📌 {selected_month} Material Requirements (KG)")
+                    st.dataframe(month_summary.style.format({"Total Required (KG)": "{:,.2f}"}), use_container_width=True)
+                
+                # --- Annual Cumulative Display ---
+                st.write("### 📈 Annual Cumulative Material Requirements (KG)")
+                st.info("This is the running total of all months you have planned and saved so far.")
+                
+                # Pivot table to show month-by-month and total
                 pivot_df = df_final.pivot_table(values="Total Required (KG)", index="Ingredient", columns="Month", aggfunc="sum").fillna(0)
                 
-                st.write("### Total Material Requirement (KG) by Month")
-                st.dataframe(pivot_df.style.format("{:.2f}"), use_container_width=True)
+                # Ensure columns are sorted by month order, not alphabetically
+                active_months = [m for m in month_names if m in pivot_df.columns]
+                pivot_df = pivot_df[active_months]
                 
+                # Add Cumulative Total Column
+                pivot_df["Annual Cumulative Total"] = pivot_df.sum(axis=1)
+                
+                st.dataframe(pivot_df.style.format("{:,.2f}"), use_container_width=True)
+                
+                # CSV Export
                 csv = pivot_df.to_csv().encode('utf-8')
-                st.download_button("Download Material Report", csv, "monthly_requirements.csv", "text/csv")
+                st.download_button("Download Cumulative Plan (CSV)", csv, "cumulative_annual_plan.csv", "text/csv")
+
 
 # --- TAB 3: INVENTORY & ALARMS ---
 with tab3:
     st.header("Raw Material Inventory & Forecast Alarms")
     daily_cons = st.number_input("Enter Average Daily Consumption (KG) for all items:", min_value=1.0, value=100.0)
     
-    # Calculate requirements
     df_alarms = INV_DF.copy()
     df_alarms["Daily Consumption"] = daily_cons
     
-    # Days needed
     for days in [15, 30, 60, 90, 120, 150]:
         df_alarms[f"Req {days} Days"] = daily_cons * days
     
-    # Alarms
     for days in [15, 30, 60, 90, 120, 150]:
         df_alarms[f"Alarm < {days}d"] = df_alarms["Ending"] < df_alarms[f"Req {days} Days"]
 
-    # Display with conditional formatting
     st.dataframe(df_alarms.style.map(
         lambda x: 'background-color: #ff9999' if x is True else 'background-color: #99ff99', 
         subset=[col for col in df_alarms.columns if "Alarm" in col]
