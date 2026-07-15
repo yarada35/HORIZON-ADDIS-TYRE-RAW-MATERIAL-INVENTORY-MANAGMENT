@@ -220,6 +220,8 @@ INV_DF, BOM_DATA, RECIPE_DATA = get_data()
 # Initialize Session State for the Annual Plan
 if "annual_plan" not in st.session_state:
     st.session_state["annual_plan"] = {}
+if "cumulative_requirements" not in st.session_state:
+    st.session_state["cumulative_requirements"] = pd.DataFrame()
 
 # --- 3. CSS STYLING ---
 st.markdown("""
@@ -231,7 +233,7 @@ st.markdown("""
 # --- 4. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
 
-tab1, tab2, tab3 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms", "📉 Planned vs Actual"])
 
 # --- TAB 1: PRODUCTION ---
 with tab1:
@@ -252,12 +254,12 @@ with tab1:
                     st.caption(f"{ing}: **{(val * batch):.2f} KG**")
             st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TAB 2: MONTHLY PLANNING (UPDATED) ---
+# --- TAB 2: MONTHLY PLANNING ---
 with tab2:
     st.header("Monthly Material Requirements Plan")
     
     # 1. Month Dropdown
-    month_names = ["January", "February", "March", "April", "May", "June", 
+    month_names = ["January", "February", "March", "April", "May", "June",
                    "July", "August", "September", "October", "November", "December"]
     
     col1, col2 = st.columns([1, 1])
@@ -276,8 +278,8 @@ with tab2:
     
     # 3. Select products for specific month
     plan_products = st.multiselect(
-        f"3. Select Products to produce in {selected_month}", 
-        list(BOM_DATA.index), 
+        f"3. Select Products to produce in {selected_month}",
+        list(BOM_DATA.index),
         default=list(existing_targets.keys())
     )
     
@@ -336,38 +338,78 @@ with tab2:
                 st.write("### 📈 Annual Cumulative Material Requirements (KG)")
                 st.info("This is the running total of all months you have planned and saved so far.")
                 
-                # Pivot table to show month-by-month and total
-                pivot_df = df_final.pivot_table(values="Total Required (KG)", index="Ingredient", columns="Month", aggfunc="sum").fillna(0)
-                
-                # Ensure columns are sorted by month order, not alphabetically
-                active_months = [m for m in month_names if m in pivot_df.columns]
-                pivot_df = pivot_df[active_months]
-                
-                # Add Cumulative Total Column
-                pivot_df["Annual Cumulative Total"] = pivot_df.sum(axis=1)
+                # Pivot table to show month-by-month and Total Annual Requirements
+                pivot_df = df_final.pivot_table(index="Ingredient", columns="Month", values="Total Required (KG)", aggfunc="sum", fill_value=0)
+                pivot_df["Total Annual"] = pivot_df.sum(axis=1)
                 
                 st.dataframe(pivot_df.style.format("{:,.2f}"), use_container_width=True)
                 
-                # CSV Export
-                csv = pivot_df.to_csv().encode('utf-8')
-                st.download_button("Download Cumulative Plan (CSV)", csv, "cumulative_annual_plan.csv", "text/csv")
-
+                # Save the cumulative data globally so Tab 4 can access it
+                st.session_state["cumulative_requirements"] = pivot_df.reset_index()
 
 # --- TAB 3: INVENTORY & ALARMS ---
 with tab3:
-    st.header("Raw Material Inventory & Forecast Alarms")
-    daily_cons = st.number_input("Enter Average Daily Consumption (KG) for all items:", min_value=1.0, value=100.0)
-    
-    df_alarms = INV_DF.copy()
-    df_alarms["Daily Consumption"] = daily_cons
-    
-    for days in [15, 30, 60, 90, 120, 150]:
-        df_alarms[f"Req {days} Days"] = daily_cons * days
-    
-    for days in [15, 30, 60, 90, 120, 150]:
-        df_alarms[f"Alarm < {days}d"] = df_alarms["Ending"] < df_alarms[f"Req {days} Days"]
+    st.header("📦 Inventory Levels")
+    st.dataframe(INV_DF.style.format("{:,.2f}"), use_container_width=True)
 
-    st.dataframe(df_alarms.style.map(
-        lambda x: 'background-color: #ff9999' if x is True else 'background-color: #99ff99', 
-        subset=[col for col in df_alarms.columns if "Alarm" in col]
-    ), use_container_width=True)
+# --- TAB 4: PLANNED VS ACTUAL DEVIATION REPORT ---
+with tab4:
+    st.header("⚖️ Deviation Balance Report (Planned vs. Actual)")
+    st.write("Evaluate your forecasted material requirements against actual store consumption.")
+    
+    if not st.session_state["cumulative_requirements"].empty:
+        # Load the saved planned data
+        req_df = st.session_state["cumulative_requirements"][["Ingredient", "Total Annual"]].copy()
+        req_df.rename(columns={"Total Annual": "Planned Requirement (KG)"}, inplace=True)
+        
+        # Add an editable column for Actual Consumption
+        req_df["Actual Consumed (KG)"] = 0.0
+        
+        st.info("💡 **Enter or paste your actual consumed material (KG) from the store in the table below to calculate the deviation.**")
+        
+        # Make dataframe editable for Actual Inputs
+        edited_df = st.data_editor(
+            req_df,
+            column_config={
+                "Ingredient": st.column_config.TextColumn("Ingredient", disabled=True),
+                "Planned Requirement (KG)": st.column_config.NumberColumn("Planned (KG)", disabled=True, format="%.2f"),
+                "Actual Consumed (KG)": st.column_config.NumberColumn("Actual Consumed (KG)", format="%.2f", min_value=0.0)
+            },
+            use_container_width=True,
+            hide_index=True,
+            key="actual_consumption_editor"
+        )
+        
+        # Calculate Deviations
+        report_df = edited_df.copy()
+        report_df["Deviation (KG)"] = report_df["Actual Consumed (KG)"] - report_df["Planned Requirement (KG)"]
+        
+        # Handle division by zero for the percentage
+        report_df["Deviation (%)"] = report_df.apply(
+            lambda row: (row["Deviation (KG)"] / row["Planned Requirement (KG)"] * 100) if row["Planned Requirement (KG)"] > 0 else 0.0,
+            axis=1
+        )
+        
+        st.write("### 📊 Balance Deviation Evaluation")
+        
+        # Styling function to highlight over-consumption (red) and under-consumption/savings (green)
+        def highlight_deviation(val):
+            if isinstance(val, str):
+                return ''
+            if val > 0:
+                return 'color: #ff4b4b; font-weight: bold;' # Red for Over-Consumed
+            elif val < 0:
+                return 'color: #00cc66; font-weight: bold;' # Green for Under-Consumed
+            return ''
+            
+        # Format the final evaluated report
+        styled_report = report_df.style.map(highlight_deviation, subset=["Deviation (KG)", "Deviation (%)"]).format({
+            "Planned Requirement (KG)": "{:,.2f}",
+            "Actual Consumed (KG)": "{:,.2f}",
+            "Deviation (KG)": "{:,.2f}",
+            "Deviation (%)": "{:,.2f}%"
+        })
+        
+        st.dataframe(styled_report, use_container_width=True, hide_index=True)
+    else:
+        st.warning("⚠️ No planning data found. Please generate and save a Monthly Plan in the 'Monthly Planning' tab first.")
