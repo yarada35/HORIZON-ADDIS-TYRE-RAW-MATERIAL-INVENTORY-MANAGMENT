@@ -9,6 +9,7 @@ st.set_page_config(page_title="Horizon Production System", layout="wide")
 def get_data():
     # Complete Inventory Dataset
     inventory_data = pd.DataFrame([
+        # --- RUBBERS & POLYMERS ---
         {"Material": "SMR-20 (SIR /SMR-20)", "Beginning": 708517.13, "WIP": 708517.13, "Ending": 472344.8},
         {"Material": "BEBEKA RUBBER (SMR-20)", "Beginning": 1022.51, "WIP": 1022.51, "Ending": 681.67},
         {"Material": "BR 1220 (SKD-2)", "Beginning": 91616.55, "WIP": 91616.55, "Ending": 61077.7},
@@ -18,35 +19,49 @@ def get_data():
         {"Material": "BUTYL RUBBER BK 1675 N", "Beginning": 1748.18, "WIP": 1748.18, "Ending": 1165.45},
         {"Material": "WHOLE TYRE RECLAIM RUBBER (Reclaim RSTN)", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 8000.00},
         {"Material": "ECCOR RBR 70", "Beginning": 5000.00, "WIP": 5000.00, "Ending": 4000.00},
+        
+        # --- CARBON BLACKS ---
         {"Material": "N-220 / ISAF", "Beginning": 8000.00, "WIP": 8000.00, "Ending": 6500.00},
         {"Material": "N-326 / HAF-LS", "Beginning": 12000.00, "WIP": 12000.00, "Ending": 9500.00},
         {"Material": "N-330 / HAF", "Beginning": 30000.00, "WIP": 30000.00, "Ending": 22000.00},
         {"Material": "N-339 / HAF-HS", "Beginning": 15000.00, "WIP": 15000.00, "Ending": 11000.00},
         {"Material": "N-550 / FEF", "Beginning": 20000.00, "WIP": 20000.00, "Ending": 14000.00},
         {"Material": "N-660 / GPF", "Beginning": 25000.00, "WIP": 25000.00, "Ending": 19500.00},
+        
+        # --- OILS & PROCESS AIDS ---
         {"Material": "HAO (Dutrex RA-3)", "Beginning": 15000.00, "WIP": 15000.00, "Ending": 11000.00},
         {"Material": "TRUSTRING OIL", "Beginning": 8000.00, "WIP": 8000.00, "Ending": 6000.00},
         {"Material": "PROCESS OIL (PR-2)", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 7500.00},
         {"Material": "CASTOR OIL", "Beginning": 2000.00, "WIP": 2000.00, "Ending": 1500.00},
+        
+        # --- INORGANICS & ACIDS ---
         {"Material": "ZINC OXIDE (Zinc Oxide 98%)", "Beginning": 12000.00, "WIP": 12000.00, "Ending": 9200.00},
         {"Material": "RENACIT PEPTIZER / ZINCOLET-86 / PEPTIZOL-7", "Beginning": 3000.00, "WIP": 3000.00, "Ending": 2200.00},
         {"Material": "AKTIPLAST / ZINCOLET-T / ACMETOL T", "Beginning": 4000.00, "WIP": 4000.00, "Ending": 3100.00},
         {"Material": "RUBBER GRADE STEARIC ACID (Stearin 18 RG vlocky)", "Beginning": 6000.00, "WIP": 6000.00, "Ending": 4800.00},
+        
+        # --- ANTIOXIDANTS & ANTIOZONANTS ---
         {"Material": "IPPD (Vulkanox 4010, Dusantox IPPD)", "Beginning": 5000.00, "WIP": 5000.00, "Ending": 3900.00},
         {"Material": "TMQ (Vulkanox HS, Dusantox 86)", "Beginning": 4500.00, "WIP": 4500.00, "Ending": 3200.00},
         {"Material": "OSW-111 (Antilux 111)", "Beginning": 3000.00, "WIP": 3000.00, "Ending": 2100.00},
         {"Material": "6PPD/4020", "Beginning": 8000.00, "WIP": 8000.00, "Ending": 6100.00},
         {"Material": "77PD", "Beginning": 2000.00, "WIP": 2000.00, "Ending": 1400.00},
+        
+        # --- RESINS & ADHESIVES ---
         {"Material": "COHEDURE RS", "Beginning": 1500.00, "WIP": 1500.00, "Ending": 1100.00},
         {"Material": "BASF KORESIN POWDRE(RESIN) / RIBETAK R7578 P", "Beginning": 2500.00, "WIP": 2500.00, "Ending": 1800.00},
         {"Material": "Durez 12 686", "Beginning": 3000.00, "WIP": 3000.00, "Ending": 2200.00},
         {"Material": "MANOBOND 680 C", "Beginning": 1800.00, "WIP": 1800.00, "Ending": 1300.00},
         {"Material": "PENACOLITE RESIN B 20S", "Beginning": 2000.00, "WIP": 2000.00, "Ending": 1500.00},
         {"Material": "COUMARON RESIN/NECIRES LF 220.100 FLAKES", "Beginning": 4000.00, "WIP": 4000.00, "Ending": 3100.00},
+        
+        # --- FILLERS & SILICA ---
         {"Material": "CHINA CLAY KAOLINE", "Beginning": 15000.00, "WIP": 15000.00, "Ending": 12000.00},
         {"Material": "ULTRASIL VN-3, Vulkasil'S, Perkasil KS-408, KADISIL KS1", "Beginning": 18000.00, "WIP": 18000.00, "Ending": 14200.00},
         {"Material": "CALCIUM CARBONTE/WHITING CHALK", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 7800.00},
         {"Material": "LUVOMAG 290 (MgO)", "Beginning": 1200.00, "WIP": 1200.00, "Ending": 950.00},
+        
+        # --- VULCANIZING AGENTS & ACCELERATORS ---
         {"Material": "NORMAL SULPHUR", "Beginning": 10000.00, "WIP": 10000.00, "Ending": 8100.00},
         {"Material": "INSOLUBLE SULPHUR (Crystex HD OT20)", "Beginning": 6000.00, "WIP": 6000.00, "Ending": 4700.00},
         {"Material": "INSOLUBLE SULPHUR (Crystex HD OT33)", "Beginning": 5000.00, "WIP": 5000.00, "Ending": 3900.00},
@@ -79,6 +94,8 @@ def get_data():
         {"Material": "DPG", "Beginning": 1200.00, "WIP": 1200.00, "Ending": 900.00},
         {"Material": "NA-22", "Beginning": 800.00, "WIP": 800.00, "Ending": 600.00},
         {"Material": "STRUKTOL WB-16 BEADS", "Beginning": 1500.00, "WIP": 1500.00, "Ending": 1150.00},
+        
+        # --- NYLON, POLYESTER, BEAD AND STEEL CORD ---
         {"Material": "LN-6647", "Beginning": 12000.00, "WIP": 12000.00, "Ending": 9800.00},
         {"Material": "LN-6641", "Beginning": 11000.00, "WIP": 11000.00, "Ending": 8500.00},
         {"Material": "LN-4554", "Beginning": 9000.00, "WIP": 9000.00, "Ending": 7200.00},
@@ -200,73 +217,247 @@ def get_data():
 
 INV_DF, BOM_DATA, RECIPE_DATA = get_data()
 
+# --- HELPER FUNCTION FOR RM CALCULATION ---
+def calc_rm_requirements(targets_dict, days):
+    rm_totals = {}
+    for product, daily_qty in targets_dict.items():
+        if daily_qty > 0:
+            bom_row = BOM_DATA.loc[product]
+            for compound, comp_qty in bom_row.items():
+                if comp_qty > 0 and compound in RECIPE_DATA:
+                    for ingredient, ratio in RECIPE_DATA[compound].items():
+                        daily_rm = ratio * comp_qty * daily_qty
+                        monthly_rm = daily_rm * days
+                        
+                        if ingredient not in rm_totals:
+                            rm_totals[ingredient] = {"daily": 0.0, "monthly": 0.0}
+                        rm_totals[ingredient]["daily"] += daily_rm
+                        rm_totals[ingredient]["monthly"] += monthly_rm
+    return rm_totals
+
 # Initialize Session States
 if "annual_plan" not in st.session_state:
     st.session_state["annual_plan"] = {}
-if "actual_production" not in st.session_state:
-    st.session_state["actual_production"] = {}
+if "actual_plan" not in st.session_state:
+    st.session_state["actual_plan"] = {}
+
+# Styling function for DataFrames
+def color_deviation(val):
+    if val > 0:
+        return 'color: red; font-weight: bold' # Over consumption
+    elif val < 0:
+        return 'color: green; font-weight: bold' # Savings / Under consumption
+    return 'color: gray'
+
+# --- 3. CSS STYLING ---
+st.markdown("""
+    <style>
+    .compound-card { background-color: #f1f3f4; padding: 15px; border-radius: 10px; border-top: 4px solid #ff4b4b; margin-bottom: 10px; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 4. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
+
 tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms", "📉 Actual vs Planned"])
 
 # --- TAB 1: PRODUCTION ---
 with tab1:
     selected_product = st.selectbox("1. Select Product Size", list(BOM_DATA.index))
-    compounds = BOM_DATA.loc[selected_product]
-    compounds = compounds[compounds > 0].index.tolist()
+    st.markdown("---")
+    row = BOM_DATA.loc[selected_product]
+    compounds = row[row > 0].index.tolist()
+    
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
-            st.markdown(f"**{comp_name}**")
+            st.markdown('<div class="compound-card">', unsafe_allow_html=True)
+            st.write(f"#### {comp_name}")
             batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
             recipe = RECIPE_DATA.get(comp_name)
             if recipe:
                 for ing, val in recipe.items():
-                    st.caption(f"{ing}: {(val * batch):.2f} KG")
+                    st.caption(f"{ing}: **{(val * batch):.2f} KG**")
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # --- TAB 2: MONTHLY PLANNING ---
 with tab2:
     st.header("Monthly Material Requirements Plan")
-    month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    selected_month = st.selectbox("Select Planning Month", month_names)
     
-    # Pre-fill
-    plan_data = st.session_state["annual_plan"].get(selected_month, {"targets": {}})
-    plan_products = st.multiselect("Select Products to Produce", list(BOM_DATA.index), default=list(plan_data["targets"].keys()))
+    month_names = ["January", "February", "March", "April", "May", "June", 
+                   "July", "August", "September", "October", "November", "December"]
     
-    target_inputs = {}
-    cols = st.columns(3)
-    for i, p in enumerate(plan_products):
-        with cols[i % 3]:
-            target_inputs[p] = st.number_input(f"Target for {p}", value=plan_data["targets"].get(p, 0))
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        selected_month = st.selectbox("1. Select Planning Month", month_names)
+        
+    existing_days = st.session_state["annual_plan"].get(selected_month, {}).get("days", 22)
+    existing_targets = st.session_state["annual_plan"].get(selected_month, {}).get("targets", {})
     
-    if st.button("Save Monthly Plan"):
-        st.session_state["annual_plan"][selected_month] = {"targets": target_inputs}
-        st.success("Plan saved!")
+    with col2:
+        working_days = st.number_input(f"2. Working Days in {selected_month}", min_value=0, max_value=31, value=existing_days)
 
-# --- TAB 3: INVENTORY ---
+    st.markdown("---")
+    
+    plan_products = st.multiselect(
+        f"3. Select Products to produce in {selected_month}", 
+        list(BOM_DATA.index), 
+        default=list(existing_targets.keys())
+    )
+    
+    if plan_products:
+        st.subheader(f"4. Define Daily Production Targets (Units per Day) for {selected_month}")
+        target_inputs = {}
+        
+        cols = st.columns(3)
+        for i, p in enumerate(plan_products):
+            with cols[i % 3]:
+                val = existing_targets.get(p, 0)
+                target_inputs[p] = st.number_input(f"{p}", min_value=0, value=val, key=f"target_{selected_month}_{p}")
+        
+        if st.button(f"Save & Generate Requirements for {selected_month}", type="primary"):
+            st.session_state["annual_plan"][selected_month] = {
+                "days": working_days,
+                "targets": target_inputs
+            }
+            st.success(f"Successfully updated targets for {selected_month}!")
+            st.info("Navigate to the 'Actual vs Planned' tab to compare this plan against reality.")
+
+# --- TAB 3: INVENTORY & ALARMS ---
 with tab3:
-    st.header("Raw Material Inventory")
-    st.dataframe(INV_DF, use_container_width=True)
+    st.header("Raw Material Inventory & Forecast Alarms")
+    daily_cons = st.number_input("Enter Average Daily Consumption (KG) for all items:", min_value=1.0, value=100.0)
+    
+    df_alarms = INV_DF.copy()
+    df_alarms["Daily Consumption"] = daily_cons
+    
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Req {days} Days"] = daily_cons * days
+    
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Alarm < {days}d"] = df_alarms["Ending"] < df_alarms[f"Req {days} Days"]
 
-# --- TAB 4: ACTUAL VS PLANNED ---
+    st.dataframe(df_alarms.style.map(
+        lambda x: 'background-color: #ff9999' if x is True else 'background-color: #99ff99', 
+        subset=[col for col in df_alarms.columns if "Alarm" in col]
+    ), use_container_width=True)
+
+# --- TAB 4: ACTUAL VS PLANNED (NEW) ---
 with tab4:
     st.header("📉 Actual vs. Planned Performance")
-    selected_month = st.selectbox("Select Month to Review", ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], key="review_month")
+    st.markdown("Compare your real production data against the targets saved in your Monthly Plan.")
     
-    if selected_month in st.session_state["annual_plan"]:
-        targets = st.session_state["annual_plan"][selected_month]["targets"]
-        st.subheader(f"Input Actual Production for {selected_month}")
-        
-        actuals = {}
-        for prod, target in targets.items():
-            actuals[prod] = st.number_input(f"Actual units for {prod} (Target: {target})", value=0)
-            
-        if st.button("Calculate Variance"):
-            for prod, actual in actuals.items():
-                variance = actual - targets.get(prod, 0)
-                color = "green" if variance >= 0 else "red"
-                st.markdown(f"{prod}: Target {targets[prod]} | Actual {actual} | Variance: <span style='color:{color}'>{variance}</span>", unsafe_allow_html=True)
+    month_names = ["January", "February", "March", "April", "May", "June", 
+                   "July", "August", "September", "October", "November", "December"]
+                   
+    selected_actual_month = st.selectbox("1. Select Month to Review", month_names, key="actual_month_select")
+    
+    if selected_actual_month not in st.session_state["annual_plan"]:
+        st.warning(f"No planned data found for {selected_actual_month}. Please create a plan in the 'Monthly Planning' tab first.")
     else:
-        st.warning("Please save a plan in the 'Monthly Planning' tab first.")
+        st.markdown(f"### Record Actuals for {selected_actual_month}")
+        planned_data = st.session_state["annual_plan"][selected_actual_month]
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            saved_actual_days = st.session_state["actual_plan"].get(selected_actual_month, {}).get("days", planned_data["days"])
+            actual_days = st.number_input(f"Actual Working Days in {selected_actual_month}", min_value=0, max_value=31, value=saved_actual_days, key=f"actual_days_{selected_actual_month}")
+            st.caption(f"Planned working days: {planned_data['days']}")
+            
+        with col2:
+            saved_actual_keys = list(st.session_state["actual_plan"].get(selected_actual_month, {}).get("targets", {}).keys())
+            default_keys = saved_actual_keys if saved_actual_keys else list(planned_data["targets"].keys())
+            
+            actual_products = st.multiselect(
+                "Products Actually Produced", 
+                list(BOM_DATA.index), 
+                default=default_keys,
+                key=f"actual_prod_{selected_actual_month}"
+            )
+            
+        if actual_products:
+            st.write("#### Enter Actual Daily Production (Units/Day)")
+            actual_targets = {}
+            cols = st.columns(3)
+            
+            for i, p in enumerate(actual_products):
+                with cols[i % 3]:
+                    planned_val = planned_data["targets"].get(p, 0)
+                    saved_val = st.session_state["actual_plan"].get(selected_actual_month, {}).get("targets", {}).get(p, planned_val)
+                    actual_targets[p] = st.number_input(f"{p}", min_value=0, value=saved_val, key=f"actual_target_{selected_actual_month}_{p}")
+                    st.caption(f"Planned target: {planned_val}")
+
+            if st.button(f"Calculate Deviations for {selected_actual_month}", type="primary"):
+                # Save Actuals to Memory
+                st.session_state["actual_plan"][selected_actual_month] = {
+                    "days": actual_days,
+                    "targets": actual_targets
+                }
+                
+                # --- MONTHLY DEVIATION CALCULATION ---
+                planned_rm_month = calc_rm_requirements(planned_data["targets"], planned_data["days"])
+                actual_rm_month = calc_rm_requirements(actual_targets, actual_days)
+                
+                # Combine into Report
+                all_ingredients = set(list(planned_rm_month.keys()) + list(actual_rm_month.keys()))
+                report_rows = []
+                
+                for ing in all_ingredients:
+                    p_daily = planned_rm_month.get(ing, {}).get("daily", 0.0)
+                    p_month = planned_rm_month.get(ing, {}).get("monthly", 0.0)
+                    
+                    a_daily = actual_rm_month.get(ing, {}).get("daily", 0.0)
+                    a_month = actual_rm_month.get(ing, {}).get("monthly", 0.0)
+                    
+                    report_rows.append({
+                        "Ingredient": ing,
+                        "Planned Daily (KG)": p_daily,
+                        "Actual Daily (KG)": a_daily,
+                        "Daily Deviation": a_daily - p_daily,
+                        "Planned Monthly (KG)": p_month,
+                        "Actual Monthly (KG)": a_month,
+                        "Monthly Deviation": a_month - p_month
+                    })
+                
+                df_month = pd.DataFrame(report_rows).set_index("Ingredient")
+                
+                st.markdown("---")
+                st.write(f"### 📊 {selected_actual_month} Raw Material Consumption Deviation")
+                st.info("Negative Deviation (Green) = Under Consumption / Savings. Positive Deviation (Red) = Over Consumption.")
+                
+                st.dataframe(df_month.style.format("{:,.2f}").map(color_deviation, subset=["Daily Deviation", "Monthly Deviation"]), use_container_width=True)
+                
+                # --- ANNUAL DEVIATION CALCULATION ---
+                st.write("### 📈 Annual Cumulative Deviation")
+                st.caption("This aggregates all months currently saved in your Planned and Actual memory banks.")
+                
+                annual_planned = {}
+                annual_actual = {}
+                
+                # Sum Planned
+                for m, p_data in st.session_state["annual_plan"].items():
+                    m_rm = calc_rm_requirements(p_data["targets"], p_data["days"])
+                    for ing, vals in m_rm.items():
+                        annual_planned[ing] = annual_planned.get(ing, 0) + vals["monthly"]
+                        
+                # Sum Actuals
+                for m, a_data in st.session_state["actual_plan"].items():
+                    a_rm = calc_rm_requirements(a_data["targets"], a_data["days"])
+                    for ing, vals in a_rm.items():
+                        annual_actual[ing] = annual_actual.get(ing, 0) + vals["monthly"]
+                
+                annual_rows = []
+                all_annual_ing = set(list(annual_planned.keys()) + list(annual_actual.keys()))
+                
+                for ing in all_annual_ing:
+                    p_annual = annual_planned.get(ing, 0.0)
+                    a_annual = annual_actual.get(ing, 0.0)
+                    annual_rows.append({
+                        "Ingredient": ing,
+                        "Annual Planned (KG)": p_annual,
+                        "Annual Actual (KG)": a_annual,
+                        "Annual Deviation": a_annual - p_annual
+                    })
+                    
+                df_annual = pd.DataFrame(annual_rows).set_index("Ingredient")
+                st.dataframe(df_annual.style.format("{:,.2f}").map(color_deviation, subset=["Annual Deviation"]), use_container_width=True)
