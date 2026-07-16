@@ -224,14 +224,14 @@ with tab1:
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
-            st.markdown('<div class="compound-card">', unsafe_allow_html=True)
-            st.write(f"#### {comp_name}")
-            batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
-            recipe = RECIPE_DATA.get(comp_name)
-            if recipe:
-                for ing, val in recipe.items():
-                    st.caption(f"{ing}: **{(val * batch):.2f} KG**")
-            st.markdown('</div>', unsafe_allow_html=True)
+           st.markdown('<div class="compound-card">', unsafe_allow_html=True)
+           st.write(f"#### {comp_name}")
+           batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
+           recipe = RECIPE_DATA.get(comp_name)
+           if recipe:
+               for ing, val in recipe.items():
+                   st.caption(f"{ing}: **{(val * batch):.2f} KG**")
+           st.markdown('</div>', unsafe_allow_html=True)
 
 # --- TAB 2: MONTHLY PLANNING ---
 with tab2:
@@ -286,7 +286,6 @@ with tab2:
                 
                 st.write("### 📈 Annual Cumulative Material Requirements (KG)")
                 pivot_df = df_final.pivot_table(index="Ingredient", columns="Month", values="Total Required (KG)", aggfunc="sum", fill_value=0)
-                # Ensure all months are represented
                 for m in month_names:
                     if m not in pivot_df.columns:
                         pivot_df[m] = 0
