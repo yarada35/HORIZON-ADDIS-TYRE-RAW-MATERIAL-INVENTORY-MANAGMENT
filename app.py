@@ -286,6 +286,11 @@ with tab2:
                 
                 st.write("### 📈 Annual Cumulative Material Requirements (KG)")
                 pivot_df = df_final.pivot_table(index="Ingredient", columns="Month", values="Total Required (KG)", aggfunc="sum", fill_value=0)
+                # Ensure all months are represented
+                for m in month_names:
+                    if m not in pivot_df.columns:
+                        pivot_df[m] = 0
+                pivot_df = pivot_df[month_names]
                 pivot_df["Total Annual"] = pivot_df.sum(axis=1)
                 st.dataframe(pivot_df.style.format("{:,.2f}"), use_container_width=True)
                 st.session_state["cumulative_requirements"] = pivot_df
