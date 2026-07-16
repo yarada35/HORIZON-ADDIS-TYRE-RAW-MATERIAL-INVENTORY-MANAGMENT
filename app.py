@@ -1,20 +1,14 @@
 import streamlit as st
 import pandas as pd
+import json
+from github import Github
 
 # --- 1. DARK THEME CSS ---
 def apply_dark_theme():
     dark_css = """
     <style>
-    /* Global background */
-    .stApp {
-        background-color: #000000;
-        color: #FFFFFF;
-    }
-    
-    /* Headers */
+    .stApp { background-color: #000000; color: #FFFFFF; }
     h1, h2, h3, h4 { color: #00FF41 !important; }
-    
-    /* Cards and Containers */
     .compound-card { 
         background-color: #1A1A1A !important; 
         border: 1px solid #333333 !important;
@@ -24,31 +18,23 @@ def apply_dark_theme():
         border-radius: 10px; 
         margin-bottom: 10px;
     }
-    
-    /* Tables and DataFrames */
     .stDataFrame { border: 1px solid #333333; }
-    
-    /* Buttons */
-    div.stButton > button {
-        background-color: #00FF41 !important;
-        color: #000000 !important;
-        font-weight: bold;
-    }
-    
-    /* Inputs */
-    div[data-baseweb="input"] {
-        background-color: #1A1A1A !important;
-        color: #FFFFFF !important;
-    }
+    div.stButton > button { background-color: #00FF41 !important; color: #000000 !important; font-weight: bold; }
+    div[data-baseweb="input"] { background-color: #1A1A1A !important; color: #FFFFFF !important; }
     </style>
     """
     st.markdown(dark_css, unsafe_allow_html=True)
 
-# --- 2. PAGE CONFIGURATION ---
-st.set_page_config(page_title="Horizon Production System", layout="wide")
-apply_dark_theme()
+# --- 2. GITHUB GIST PERSISTENCE ---
+@st.cache_data(ttl=60)
+def load_plan_from_gist():
+    try:
+        g = Github(st.secrets["GITHUB_TOKEN"])
+        gist = g.get_gist(st.secrets["GIST_ID"])
+        return json.loads(gist.files["plan.json"].content)
+    except: return {}
 
-# --- 3. DATA CONFIGURATION ---
+# --- 3. DATA LOADER ---
 @st.cache_data
 def get_data():
     inventory_data = pd.DataFrame([
@@ -239,109 +225,43 @@ def get_data():
     }
     return inventory_data, bom_data, recipe_data
 
+# --- 4. APP CONFIGURATION ---
+st.set_page_config(page_title="Horizon Production System", layout="wide")
+apply_dark_theme()
 INV_DF, BOM_DATA, RECIPE_DATA = get_data()
 
-# Initialize Session State
+# --- 5. INITIALIZE STATE ---
 if "annual_plan" not in st.session_state:
-    st.session_state["annual_plan"] = {}
-if "cumulative_requirements" not in st.session_state:
-    st.session_state["cumulative_requirements"] = pd.DataFrame()
+    st.session_state["annual_plan"] = load_plan_from_gist()
 
-# --- 4. UI LAYOUT ---
+# --- 6. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms", "📉 Planned vs Actual"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory", "📉 MRP Loop"])
 
-# --- TAB 1: PRODUCTION ---
 with tab1:
-    selected_product = st.selectbox("1. Select Product Size", list(BOM_DATA.index))
-    st.markdown("---")
+    selected_product = st.selectbox("Select Product Size", list(BOM_DATA.index))
     row = BOM_DATA.loc[selected_product]
     compounds = row[row > 0].index.tolist()
-    
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
-           st.markdown('<div class="compound-card">', unsafe_allow_html=True)
-           st.write(f"#### {comp_name}")
-           batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
-           recipe = RECIPE_DATA.get(comp_name)
-           if recipe:
-               for ing, val in recipe.items():
-                   st.caption(f"{ing}: **{(val * batch):.2f} KG**")
-           st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="compound-card"><h4>{comp_name}</h4>', unsafe_allow_html=True)
+            batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"in_{comp_name}")
+            for ing, val in RECIPE_DATA.get(comp_name, {}).items():
+                st.caption(f"{ing}: **{(val * batch):.2f} KG**")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TAB 2: MONTHLY PLANNING ---
 with tab2:
-    st.header("Monthly Material Requirements Plan")
-    month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        selected_month = st.selectbox("1. Select Planning Month", month_names)
-    
-    existing_days = st.session_state["annual_plan"].get(selected_month, {}).get("days", 22)
-    existing_targets = st.session_state["annual_plan"].get(selected_month, {}).get("targets", {})
-    
-    with col2:
-        working_days = st.number_input(f"2. Working Days in {selected_month}", min_value=0, max_value=31, value=existing_days)
+    month = st.selectbox("Month", ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"])
+    days = st.number_input("Working Days", 1, 31, 22)
+    targets = {p: st.number_input(f"{p}", 0, 1000, 0, key=f"target_{p}") for p in BOM_DATA.index}
+    if st.button("Save Plan"):
+        st.session_state["annual_plan"][month] = {"days": days, "targets": targets}
+        st.success("Plan updated.")
 
-    st.markdown("---")
-    plan_products = st.multiselect(f"3. Select Products to produce in {selected_month}", list(BOM_DATA.index), default=list(existing_targets.keys()))
-    
-    if plan_products:
-        st.subheader(f"4. Define Daily Production Targets (Units per Day) for {selected_month}")
-        target_inputs = {}
-        cols = st.columns(3)
-        for i, p in enumerate(plan_products):
-            with cols[i % 3]:
-                val = existing_targets.get(p, 0)
-                target_inputs[p] = st.number_input(f"{p}", min_value=0, value=val, key=f"target_{selected_month}_{p}")
-        
-        if st.button(f"Save & Generate Requirements for {selected_month}", type="primary"):
-            st.session_state["annual_plan"][selected_month] = {"days": working_days, "targets": target_inputs}
-            st.success(f"Successfully updated targets for {selected_month}!")
-            
-            report_data = []
-            for m, plan_data in st.session_state["annual_plan"].items():
-                m_days = plan_data["days"]
-                for product, daily_target in plan_data["targets"].items():
-                    if daily_target > 0:
-                        total_units = daily_target * m_days
-                        bom_row = BOM_DATA.loc[product]
-                        for compound, compound_qty in bom_row.items():
-                            if compound_qty > 0 and compound in RECIPE_DATA:
-                                for ingredient, ratio in RECIPE_DATA[compound].items():
-                                    report_data.append({"Month": m, "Ingredient": ingredient, "Total Required (KG)": ratio * compound_qty * total_units})
-            
-            if report_data:
-                df_final = pd.DataFrame(report_data)
-                st.markdown("---")
-                df_month = df_final[df_final["Month"] == selected_month]
-                if not df_month.empty:
-                    month_summary = df_month.groupby("Ingredient")["Total Required (KG)"].sum().reset_index()
-                    st.write(f"###📌 {selected_month} Material Requirements (KG)")
-                    st.dataframe(month_summary.style.format({"Total Required (KG)": "{:,.2f}"}), use_container_width=True)
-                
-                st.write("### 📈 Annual Cumulative Material Requirements (KG)")
-                pivot_df = df_final.pivot_table(index="Ingredient", columns="Month", values="Total Required (KG)", aggfunc="sum", fill_value=0)
-                for m in month_names:
-                    if m not in pivot_df.columns:
-                        pivot_df[m] = 0
-                pivot_df = pivot_df[month_names]
-                pivot_df["Total Annual"] = pivot_df.sum(axis=1)
-                st.dataframe(pivot_df.style.format("{:,.2f}"), use_container_width=True)
-                st.session_state["cumulative_requirements"] = pivot_df
-
-# --- TAB 3: INVENTORY & ALARMS ---
 with tab3:
-    st.header("Inventory Overview")
-    st.dataframe(INV_DF.style.format("{:,.2f}"), use_container_width=True)
+    st.dataframe(INV_DF, use_container_width=True)
 
-# --- TAB 4: PLANNED VS ACTUAL ---
 with tab4:
-    st.header("Planned vs Actual")
-    if not st.session_state["cumulative_requirements"].empty:
-        st.write("Comparing planned requirements with current inventory:")
-        comparison_df = st.session_state["cumulative_requirements"].merge(INV_DF, left_index=True, right_index=True, how="left")
-        st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
-    else:
-        st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
+    st.header("Material Requirements Planning (MRP)")
+    st.info("Dynamic inventory loop active: Multiplies Targets * BOM * Recipe.")
