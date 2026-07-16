@@ -1,10 +1,54 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. PAGE CONFIGURATION ---
-st.set_page_config(page_title="Horizon Production System", layout="wide")
+# --- 1. DARK THEME CSS ---
+def apply_dark_theme():
+    dark_css = """
+    <style>
+    /* Global background */
+    .stApp {
+        background-color: #000000;
+        color: #FFFFFF;
+    }
+    
+    /* Headers */
+    h1, h2, h3, h4 { color: #00FF41 !important; }
+    
+    /* Cards and Containers */
+    .compound-card { 
+        background-color: #1A1A1A !important; 
+        border: 1px solid #333333 !important;
+        color: #FFFFFF !important;
+        border-top: 4px solid #00FF41 !important; 
+        padding: 15px; 
+        border-radius: 10px; 
+        margin-bottom: 10px;
+    }
+    
+    /* Tables and DataFrames */
+    .stDataFrame { border: 1px solid #333333; }
+    
+    /* Buttons */
+    div.stButton > button {
+        background-color: #00FF41 !important;
+        color: #000000 !important;
+        font-weight: bold;
+    }
+    
+    /* Inputs */
+    div[data-baseweb="input"] {
+        background-color: #1A1A1A !important;
+        color: #FFFFFF !important;
+    }
+    </style>
+    """
+    st.markdown(dark_css, unsafe_allow_html=True)
 
-# --- 2. DATA CONFIGURATION ---
+# --- 2. PAGE CONFIGURATION ---
+st.set_page_config(page_title="Horizon Production System", layout="wide")
+apply_dark_theme()
+
+# --- 3. DATA CONFIGURATION ---
 @st.cache_data
 def get_data():
     inventory_data = pd.DataFrame([
@@ -202,13 +246,6 @@ if "annual_plan" not in st.session_state:
     st.session_state["annual_plan"] = {}
 if "cumulative_requirements" not in st.session_state:
     st.session_state["cumulative_requirements"] = pd.DataFrame()
-
-# --- 3. CSS STYLING ---
-st.markdown("""
-    <style>
-    .compound-card { background-color: #f1f3f4; padding: 15px; border-radius: 10px; border-top: 4px solid #ff4b4b; margin-bottom: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
 
 # --- 4. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
