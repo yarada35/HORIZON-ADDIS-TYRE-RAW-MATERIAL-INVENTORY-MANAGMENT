@@ -10,6 +10,7 @@ if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 def save_plan_data(data_dict):
+    """Saves the planning dictionary as a CSV."""
     rows = []
     for month, details in data_dict.items():
         for prod, target in details.get("targets", {}).items():
@@ -17,6 +18,7 @@ def save_plan_data(data_dict):
     pd.DataFrame(rows).to_csv(DATA_FILE, index=False)
 
 def load_plan_data():
+    """Loads the CSV and converts back to the app's internal structure."""
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
         plan = {}
@@ -25,7 +27,7 @@ def load_plan_data():
                 plan[row["Month"]] = {"days": row["Days"], "targets": {}}
             plan[row["Month"]]["targets"][row["Product"]] = row["Target"]
         return plan
-    return None
+    return {}
     # --- 1. DARK THEME CSS ---
 def apply_dark_theme():
     dark_css = """
@@ -35,31 +37,31 @@ def apply_dark_theme():
         background-color: #000000;
         color: #FFFFFF;
     }
-    
+   
     /* Headers */
     h1, h2, h3, h4 { color: #00FF41 !important; }
-    
+   
     /* Cards and Containers */
-    .compound-card { 
-        background-color: #1A1A1A !important; 
+    .compound-card {
+        background-color: #1A1A1A !important;
         border: 1px solid #333333 !important;
         color: #FFFFFF !important;
-        border-top: 4px solid #00FF41 !important; 
-        padding: 15px; 
-        border-radius: 10px; 
+        border-top: 4px solid #00FF41 !important;
+        padding: 15px;
+        border-radius: 10px;
         margin-bottom: 10px;
     }
-    
+   
     /* Tables and DataFrames */
     .stDataFrame { border: 1px solid #333333; }
-    
+   
     /* Buttons */
     div.stButton > button {
         background-color: #00FF41 !important;
         color: #000000 !important;
         font-weight: bold;
     }
-    
+   
     /* Inputs */
     div[data-baseweb="input"] {
         background-color: #1A1A1A !important;
@@ -301,7 +303,7 @@ with tab1:
     st.markdown("---")
     row = BOM_DATA.loc[selected_product]
     compounds = row[row > 0].index.tolist()
-    
+   
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
@@ -321,16 +323,16 @@ with tab2:
     col1, col2 = st.columns([1, 1])
     with col1:
         selected_month = st.selectbox("1. Select Planning Month", month_names)
-    
+   
     existing_days = st.session_state["annual_plan"].get(selected_month, {}).get("days", 22)
     existing_targets = st.session_state["annual_plan"].get(selected_month, {}).get("targets", {})
-    
+   
     with col2:
         working_days = st.number_input(f"2. Working Days in {selected_month}", min_value=0, max_value=31, value=existing_days)
 
     st.markdown("---")
     plan_products = st.multiselect(f"3. Select Products to produce in {selected_month}", list(BOM_DATA.index), default=list(existing_targets.keys()))
-    
+   
     if plan_products:
         st.subheader(f"4. Define Daily Production Targets (Units per Day) for {selected_month}")
         target_inputs = {}
@@ -339,11 +341,11 @@ with tab2:
             with cols[i % 3]:
                 val = existing_targets.get(p, 0)
                 target_inputs[p] = st.number_input(f"{p}", min_value=0, value=val, key=f"target_{selected_month}_{p}")
-        
+       
         if st.button(f"Save & Generate Requirements for {selected_month}", type="primary"):
             st.session_state["annual_plan"][selected_month] = {"days": working_days, "targets": target_inputs}
             st.success(f"Successfully updated targets for {selected_month}!")
-            
+           
             report_data = []
             for m, plan_data in st.session_state["annual_plan"].items():
                 m_days = plan_data["days"]
@@ -355,7 +357,7 @@ with tab2:
                             if compound_qty > 0 and compound in RECIPE_DATA:
                                 for ingredient, ratio in RECIPE_DATA[compound].items():
                                     report_data.append({"Month": m, "Ingredient": ingredient, "Total Required (KG)": ratio * compound_qty * total_units})
-            
+           
             if report_data:
                 df_final = pd.DataFrame(report_data)
                 st.markdown("---")
@@ -364,7 +366,7 @@ with tab2:
                     month_summary = df_month.groupby("Ingredient")["Total Required (KG)"].sum().reset_index()
                     st.write(f"###📌 {selected_month} Material Requirements (KG)")
                     st.dataframe(month_summary.style.format({"Total Required (KG)": "{:,.2f}"}), use_container_width=True)
-                
+               
                 st.write("### 📈 Annual Cumulative Material Requirements (KG)")
                 pivot_df = df_final.pivot_table(index="Ingredient", columns="Month", values="Total Required (KG)", aggfunc="sum", fill_value=0)
                 for m in month_names:
@@ -391,49 +393,28 @@ with tab4:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
  # --- 4. INITIALIZE SESSION STATE ---
 if "annual_plan" not in st.session_state:
-    loaded = load_plan_data()
-    st.session_state.annual_plan = loaded if loaded else {
+    # Attempt to load from file, fallback to an empty dictionary
+    loaded_data = load_plan_data()
+    st.session_state.annual_plan = loaded_data if loaded_data else {
         "January": {"days": 25, "targets": {"8.25-16 HT-40 16PR": 0, "750-16 16PR HT-90": 0}}
     }
+
 if "inventory_data" not in st.session_state:
     st.session_state.inventory_data = INV_DF.copy()
 
-# --- 4. CALLBACK FUNCTIONS ---
-def update_jan_target():
-    jan_targets = st.session_state.annual_plan.get("January", {}).get("targets", {})
-    default_val = jan_targets.get("8.25-16 HT-40 16PR", 0)
-
-st.number_input(
-    "Target for 8.25-16 HT-40 16PR (January)",
-    value=default_val,
-    key="jan_target_input",
-    on_change=update_jan_target
-)
-
-# --- 5. DATA LOGIC (Simplified for brevity) ---
-# [Keep your get_data() function here]
-@st.cache_data
-def get_data():
-    # ... (Your existing inventory, BOM, and recipe dictionaries) ...
-    return pd.DataFrame(), pd.DataFrame(), {}
-
-# --- 6. UI LAYOUT ---
+# --- 5. UI LAYOUT ---
 st.title("Horizon Production System")
 
-# Debugging Tip
-with st.sidebar:
-    st.subheader("System Debugger")
-    st.write("Current Session State:", st.session_state.annual_plan)
-
-# Widget bound to session state via key and callback
-st.number_input(
-    "Target for 8.25-16 HT-40 16PR",
-    value=st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"],
-    key="jan_target_input",
-    on_change=update_jan_target
-)
-
+# Example of how to bind a widget so it doesn't vanish:
+# Use the 'key' parameter to link directly to your session state
 if st.button("Save Data"):
     save_plan_data(st.session_state.annual_plan)
-    st.success("Data persisted to CSV!")
-# --- Remaining app content ---
+    st.success("Data saved!")
+
+# Ensure your input fields use the key parameter to update session_state
+# Example:
+# st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"] = st.number_input(
+#     "Target for January",
+#     value=st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"],
+#     key="jan_target_input"
+# )
