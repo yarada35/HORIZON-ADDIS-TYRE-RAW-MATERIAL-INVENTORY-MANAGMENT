@@ -391,16 +391,30 @@ with tab4:
         st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
     else:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
-    # --- 4. INITIALIZE SESSION STATE ---
+ # --- 4. INITIALIZE SESSION STATE ---
 if "annual_plan" not in st.session_state:
-    st.session_state.annual_plan = {
-        "January": {"days": 25, "targets": {"8.25-16 HT-40 16PR": 0, "750-16 16PR HT-90": 0}},
-        # Add other months/defaults as needed
+    # Attempt to load from file, fallback to an empty dictionary
+    loaded_data = load_plan_data()
+    st.session_state.annual_plan = loaded_data if loaded_data else {
+        "January": {"days": 25, "targets": {"8.25-16 HT-40 16PR": 0, "750-16 16PR HT-90": 0}}
     }
 
 if "inventory_data" not in st.session_state:
     st.session_state.inventory_data = INV_DF.copy()
 
-# Add any other state variables required for your MRP calculation here
-# --- 5. UI/APP LOGIC ---
-# Now use st.session_state["annual_plan"] throughout your app
+# --- 5. UI LAYOUT ---
+st.title("Horizon Production System")
+
+# Example of how to bind a widget so it doesn't vanish:
+# Use the 'key' parameter to link directly to your session state
+if st.button("Save Data"):
+    save_plan_data(st.session_state.annual_plan)
+    st.success("Data saved!")
+
+# Ensure your input fields use the key parameter to update session_state
+# Example:
+# st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"] = st.number_input(
+#     "Target for January", 
+#     value=st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"],
+#     key="jan_target_input"
+# )
