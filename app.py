@@ -391,7 +391,10 @@ with tab4:
         st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
     else:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
-        # --- 5. INITIALIZE SESSION STATE ---
-# Change your initialization to this:
+        # --- 4. INITIALIZE SESSION STATE ---
 if "annual_plan" not in st.session_state:
+    # This calls your loading function only once when the app first loads
     st.session_state["annual_plan"] = load_plan_data()
+
+# --- 5. UI/APP LOGIC ---
+# Now use st.session_state["annual_plan"] throughout your app
