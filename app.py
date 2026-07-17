@@ -84,7 +84,7 @@ def apply_dark_theme():
     </style>
     """
     st.markdown(dark_css, unsafe_html=True)
-    --- 2. PAGE CONFIGURATION ---
+# --- 2. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Horizon Production System", layout="wide")
 apply_dark_theme()
 
