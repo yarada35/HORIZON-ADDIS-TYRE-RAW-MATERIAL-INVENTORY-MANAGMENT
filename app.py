@@ -30,11 +30,12 @@ def load_plan_data():
     return {}
     # --- 1. DARK THEME CSS ---
 def apply_dark_theme():
-    dark_css = """
+dark_css = """
     <style>
-    /* Global background */
-    .stApp { background-color: #000000; color: #E0E0E0; }
-    /* Golden Headers */
+    .stApp {
+        background-color: #000000;
+        color: #E0E0E0;
+    }    /* Golden Headers */
     h1, h2, h3, h4 { color: #FFD700 !important; text-shadow: 0px 0px 8px rgba(255, 215, 0, 0.5); }
     /* Cards */
     .recipe-card { background-color: #120B1A !important; border: 1px solid #4B0082 !important; border-top: 4px solid #8A2BE2 !important; color: #E6E6FA !important; padding: 15px; border-radius: 10px; }
@@ -42,7 +43,7 @@ def apply_dark_theme():
     """
     st.markdown(dark_css, unsafe_html=True)    
     /* General Cards */
-    .compound-card { 
+   .compound-card { 
         background-color: #1A1A1A !important; 
         border: 1px solid #333333 !important;
         color: #FFFFFF !important;
@@ -51,7 +52,6 @@ def apply_dark_theme():
         border-radius: 10px; 
         margin-bottom: 10px;
     }
-
     /* Violet Recipe Reflective Card */
     .recipe-card {
         background-color: #120B1A !important;
