@@ -444,6 +444,19 @@ with tab3:
     analysis_df["Variation (%)"] = (analysis_df["Variation (Amt)"] / analysis_df["Planned"]) * 100
     
     # 3. Display the Table
+    # --- ADD THIS BEFORE st.dataframe ---
+# 1. Verify column existence
+if "Variation (%)" in analysis_df.columns:
+    # 2. Ensure the column is numeric (this prevents Marshaller errors)
+    analysis_df["Variation (%)"] = pd.to_numeric(analysis_df["Variation (%)"], errors='coerce')
+    
+    # 3. Apply styling safely
+    st.dataframe(
+        analysis_df.style.format({"Variation (%)": "{:.2f}%"})
+                   .background_gradient(subset=["Variation (%)"], cmap="RdYlGn")
+    )
+else:
+    st.error(f"Column 'Variation (%)' not found. Available columns: {list(analysis_df.columns)}")
     st.dataframe(analysis_df.style.format({
         "Variation (%)": "{:.2f}%"
     }).background_gradient(subset=["Variation (%)"], cmap="RdYlGn"), use_container_width=True)
