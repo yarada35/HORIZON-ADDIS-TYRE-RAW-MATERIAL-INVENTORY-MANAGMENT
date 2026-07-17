@@ -29,7 +29,7 @@ def load_plan_data():
         return plan
     return {}
     # --- 1. DARK THEME CSS ---
-def apply_dark_theme():
+def def apply_dark_theme():
     dark_css = """
     <style>
     /* Global background */
@@ -41,13 +41,18 @@ def apply_dark_theme():
     /* Headers */
     h1, h2, h3, h4 { color: #00FF41 !important; }
 
-    /* --- REFLECTIVE GOLDEN TABS --- */
-    /* Tab Font Color & Shadow Effect */
-    button[data-baseweb="tab"] > div > p {
+    /* --- PERSISTENT REFLECTIVE GOLDEN TABS --- */
+    /* Targets both active and inactive tabs */
+    button[data-baseweb="tab"] {
+        font-size: 1.3rem !important; /* Slight size increment */
+        font-weight: bold !important;
         color: #FFD700 !important; /* Base Gold */
-        font-weight: bold;
-        text-shadow: 0px 0px 8px #FFD700, 0px 0px 2px #FFFFFF; /* Reflective glow */
-        font-size: 1.1rem;
+        text-shadow: 0px 0px 8px #FFD700, 0px 0px 2px #FFFFFF !important; /* Reflective glow */
+    }
+    
+    /* Ensure the text color remains gold even when hovering or selected */
+    button[data-baseweb="tab"] > div > p {
+        color: #FFD700 !important;
     }
     
     /* Active Tab Indicator (Diode Green) */
@@ -55,10 +60,12 @@ def apply_dark_theme():
         background-color: #00FF41 !important;
     }
 
-    /* --- RECIPE DIODE WHITE SELECTION --- */
-    /* Targets the active content within the selectbox/dropdown or text */
+    /* --- YELLOW REFLECTIVE FOR RECIPES & SIZES --- */
+    /* Applying to selectbox text/labels */
     div[data-baseweb="select"] {
-        color: #FFFFFF !important; /* Diode White */
+        color: #FFFF00 !important; /* Bright Yellow */
+        text-shadow: 0px 0px 5px #FFFF00 !important; /* Reflective glow */
+        font-weight: bold;
     }
 
     /* Cards and Containers */
@@ -80,7 +87,8 @@ def apply_dark_theme():
     }
     </style>
     """
-    st.markdown(dark_css, unsafe_allow_html=True)# --- 2. PAGE CONFIGURATION ---
+    st.markdown(dark_css, unsafe_allow_html=True)
+    # --- 2. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Horizon Production System", layout="wide")
 apply_dark_theme()
 
