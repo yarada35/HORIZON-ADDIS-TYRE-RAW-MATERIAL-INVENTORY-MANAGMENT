@@ -40,20 +40,27 @@ def apply_dark_theme():
     
     /* Headers */
     h1, h2, h3, h4 { color: #00FF41 !important; }
-    
-    /* Tabs: Default (Golden) */
-    button[data-baseweb="tab"] {
-        color: #FFD700 !important; /* Golden font */
-        font-size: 18px !important;
-        font-weight: bold !important;
+
+    /* --- REFLECTIVE GOLDEN TABS --- */
+    /* Tab Font Color & Shadow Effect */
+    button[data-baseweb="tab"] > div > p {
+        color: #FFD700 !important; /* Base Gold */
+        font-weight: bold;
+        text-shadow: 0px 0px 8px #FFD700, 0px 0px 2px #FFFFFF; /* Reflective glow */
+        font-size: 1.1rem;
     }
     
-    /* Tabs: Selected/Active (White) */
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #FFFFFF !important; /* White color upon selection */
-        border-bottom: 2px solid #FFFFFF !important;
+    /* Active Tab Indicator (Diode Green) */
+    div[data-baseweb="tab-highlight"] {
+        background-color: #00FF41 !important;
     }
-    
+
+    /* --- RECIPE DIODE WHITE SELECTION --- */
+    /* Targets the active content within the selectbox/dropdown or text */
+    div[data-baseweb="select"] {
+        color: #FFFFFF !important; /* Diode White */
+    }
+
     /* Cards and Containers */
     .compound-card { 
         background-color: #1A1A1A !important; 
@@ -65,25 +72,15 @@ def apply_dark_theme():
         margin-bottom: 10px;
     }
     
-    /* Tables and DataFrames */
-    .stDataFrame { border: 1px solid #333333; }
-    
     /* Buttons */
     div.stButton > button {
         background-color: #00FF41 !important;
         color: #000000 !important;
         font-weight: bold;
     }
-    
-    /* Inputs */
-    div[data-baseweb="input"] {
-        background-color: #1A1A1A !important;
-        color: #FFFFFF !important;
-    }
     </style>
     """
-    st.markdown(dark_css, unsafe_allow_html=True)
-# --- 2. PAGE CONFIGURATION ---
+    st.markdown(dark_css, unsafe_allow_html=True)# --- 2. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Horizon Production System", layout="wide")
 apply_dark_theme()
 
