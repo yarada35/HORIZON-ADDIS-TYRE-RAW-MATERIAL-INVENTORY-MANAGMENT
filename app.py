@@ -415,6 +415,64 @@ with tab4:
         st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
     else:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
+        # --- 5. PLAN VS ACTUAL TAB LOGIC ---
+def render_plan_vs_actual(plan_data, inventory_df, bom_data, recipe_data):
+    st.header("Plan vs. Actual Consumption Analysis")
+    
+    # User inputs for Actual Production
+    st.subheader("Enter Actual Production")
+    col1, col2 = st.columns(2)
+    selected_month = col1.selectbox("Select Month", list(plan_data.keys()))
+    
+    if selected_month:
+        actual_prod = {}
+        for product in plan_data[selected_month]["targets"].keys():
+            actual_prod[product] = col2.number_input(f"Actual units: {product}", min_value=0.0, value=0.0)
+            
+        if st.button("Calculate Variation"):
+            # 1. Calculate Planned Consumption (Total)
+            # 2. Calculate Actual Consumption (Total)
+            # 3. Display Comparison Table
+            
+            # Logic: (Unit per tire * Actual Production)
+            actual_consumption = {}
+            for product, units in actual_prod.items():
+                if units > 0:
+                    bom_components = bom_data.loc[product]
+                    for comp, qty in bom_components.items():
+                        if qty > 0:
+                            # If component is a Master Mix (FM), explode it using recipe
+                            if comp in recipe_data:
+                                for mat, mat_qty in recipe_data[comp].items():
+                                    actual_consumption[mat] = actual_consumption.get(mat, 0) + (qty * mat_qty * units)
+                            else:
+                                actual_consumption[comp] = actual_consumption.get(comp, 0) + (qty * units)
+            
+            # Create Dataframe for display
+            comparison_df = pd.DataFrame({
+                "Actual Used": pd.Series(actual_consumption),
+                "Planned": pd.Series({prod: plan_data[selected_month]["targets"][prod] for prod in actual_prod}) # Simplified view
+            }).fillna(0)
+            
+            # Add Variation Column
+            comparison_df["Variation"] = comparison_df["Actual Used"] - comparison_df["Planned"]
+            
+            st.dataframe(comparison_df.style.background_gradient(subset=["Variation"], cmap="RdYlGn_r"))
+
+# --- 6. TABS INTEGRATION ---
+tab1, tab2, tab3 = st.tabs(["Dashboard", "Plan vs Actual", "Entry"])
+
+with tab1:
+    st.write("Overview...")
+
+with tab2:
+    plan = load_plan_data()
+    inv = get_data()
+    # Ensure you have your BOM and Recipes loaded here
+    render_plan_vs_actual(plan, inv, bom_data, recipe_data)
+
+with tab3:
+    st.write("Data Entry...")
  # --- 4. INITIALIZE SESSION STATE ---
 if "annual_plan" not in st.session_state:
     # Attempt to load from file, fallback to an empty dictionary
