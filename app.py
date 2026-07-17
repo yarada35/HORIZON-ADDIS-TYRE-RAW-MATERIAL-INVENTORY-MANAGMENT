@@ -37,31 +37,44 @@ def apply_dark_theme():
         background-color: #000000;
         color: #FFFFFF;
     }
-   
+    
     /* Headers */
     h1, h2, h3, h4 { color: #00FF41 !important; }
-   
+    
+    /* Tabs: Default (Golden) */
+    button[data-baseweb="tab"] {
+        color: #FFD700 !important; /* Golden font */
+        font-size: 18px !important;
+        font-weight: bold !important;
+    }
+    
+    /* Tabs: Selected/Active (White) */
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #FFFFFF !important; /* White color upon selection */
+        border-bottom: 2px solid #FFFFFF !important;
+    }
+    
     /* Cards and Containers */
-    .compound-card {
-        background-color: #1A1A1A !important;
+    .compound-card { 
+        background-color: #1A1A1A !important; 
         border: 1px solid #333333 !important;
         color: #FFFFFF !important;
-        border-top: 4px solid #00FF41 !important;
-        padding: 15px;
-        border-radius: 10px;
+        border-top: 4px solid #00FF41 !important; 
+        padding: 15px; 
+        border-radius: 10px; 
         margin-bottom: 10px;
     }
-   
+    
     /* Tables and DataFrames */
     .stDataFrame { border: 1px solid #333333; }
-   
+    
     /* Buttons */
     div.stButton > button {
         background-color: #00FF41 !important;
         color: #000000 !important;
         font-weight: bold;
     }
-   
+    
     /* Inputs */
     div[data-baseweb="input"] {
         background-color: #1A1A1A !important;
@@ -70,7 +83,6 @@ def apply_dark_theme():
     </style>
     """
     st.markdown(dark_css, unsafe_allow_html=True)
-
 # --- 2. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Horizon Production System", layout="wide")
 apply_dark_theme()
