@@ -35,42 +35,55 @@ def apply_dark_theme():
     /* Global background */
     .stApp {
         background-color: #000000;
-        color: #FFFFFF;
+        color: #E0E0E0;
     }
-   
-    /* Headers */
-    h1, h2, h3, h4 { color: #00FF41 !important; }
-   
-    /* Cards and Containers */
-    .compound-card {
-        background-color: #1A1A1A !important;
+    
+    /* Golden Headers (Reflective Diode Effect) */
+    h1, h2, h3, h4 { 
+        color: #FFD700 !important; 
+        text-shadow: 0px 0px 8px rgba(255, 215, 0, 0.5);
+    }
+    
+    /* General Cards */
+    .compound-card { 
+        background-color: #1A1A1A !important; 
         border: 1px solid #333333 !important;
         color: #FFFFFF !important;
-        border-top: 4px solid #00FF41 !important;
-        padding: 15px;
-        border-radius: 10px;
+        border-top: 4px solid #FFD700 !important; 
+        padding: 15px; 
+        border-radius: 10px; 
         margin-bottom: 10px;
     }
-   
+
+    /* Violet Recipe Reflective Card */
+    .recipe-card {
+        background-color: #120B1A !important;
+        border: 1px solid #4B0082 !important;
+        border-top: 4px solid #8A2BE2 !important;
+        color: #E6E6FA !important;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(138, 43, 226, 0.2);
+    }
+    
     /* Tables and DataFrames */
-    .stDataFrame { border: 1px solid #333333; }
-   
-    /* Buttons */
+    .stDataFrame { border: 1px solid #FFD700 !important; }
+    
+    /* Golden Buttons */
     div.stButton > button {
-        background-color: #00FF41 !important;
+        background-color: #FFD700 !important;
         color: #000000 !important;
         font-weight: bold;
+        border: none;
     }
-   
-    /* Inputs */
-    div[data-baseweb="input"] {
-        background-color: #1A1A1A !important;
-        color: #FFFFFF !important;
+    
+    /* Selected Planning Colors */
+    .stSelectbox, .stNumberInput {
+        border-color: #FFD700 !important;
     }
     </style>
     """
-    st.markdown(dark_css, unsafe_allow_html=True)
-
+    st.markdown(dark_css, unsafe_html=True)
 # --- 2. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Horizon Production System", layout="wide")
 apply_dark_theme()
