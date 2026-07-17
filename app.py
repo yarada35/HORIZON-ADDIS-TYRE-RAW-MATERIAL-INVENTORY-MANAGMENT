@@ -29,55 +29,47 @@ def load_plan_data():
         return plan
     return {}
     # --- 1. DARK THEME CSS ---
-def apply_dark_theme():
+def apply_dark_theme()
     dark_css = """
     <style>
     /* Global background */
-    .stApp {
-        background-color: #000000;
-        color: #FFFFFF;
-    }
+    .stApp { background-color: #000000; color: #FFFFFF; }
     
-    /* Headers */
-    h1, h2, h3, h4 { color: #00FF41 !important; }
+    /* --- SEQUENTIAL REFLECTIVE HEADERS --- */
+    h1 { color: #FFFFFF !important; text-shadow: 0px 0px 8px #FFFFFF; font-weight: bold; }
+    h2 { color: #FF0000 !important; text-shadow: 0px 0px 8px #FF0000; font-weight: bold; }
+    h3 { color: #0000FF !important; text-shadow: 0px 0px 8px #0000FF; font-weight: bold; }
+    h4 { color: #FFFF00 !important; text-shadow: 0px 0px 8px #FFFF00; font-weight: bold; }
 
-    /* --- PERSISTENT REFLECTIVE GOLDEN TABS --- */
-    /* Targets both active and inactive tabs */
-    button[data-baseweb="tab"] {
-        font-size: 1.3rem !important; /* Slight size increment */
-        font-weight: bold !important;
-        color: #FFD700 !important; /* Base Gold */
-        text-shadow: 0px 0px 8px #FFD700, 0px 0px 2px #FFFFFF !important; /* Reflective glow */
-    }
-    
-    /* Ensure the text color remains gold even when hovering or selected */
-    button[data-baseweb="tab"] > div > p {
-        color: #FFD700 !important;
-    }
-    
-    /* Active Tab Indicator (Diode Green) */
-    div[data-baseweb="tab-highlight"] {
-        background-color: #00FF41 !important;
-    }
-
-    /* --- YELLOW REFLECTIVE FOR RECIPES & SIZES --- */
-    /* Applying to selectbox text/labels */
-    div[data-baseweb="select"] {
-        color: #FFFF00 !important; /* Bright Yellow */
-        text-shadow: 0px 0px 5px #FFFF00 !important; /* Reflective glow */
-        font-weight: bold;
-    }
-
-    /* Cards and Containers */
+    /* --- VIOLET CARD & CONTAINER --- */
     .compound-card { 
-        background-color: #1A1A1A !important; 
-        border: 1px solid #333333 !important;
+        background-color: #1A001A !important; 
+        border: 2px solid #8A2BE2 !important;
+        box-shadow: 0px 0px 10px #8A2BE2;
         color: #FFFFFF !important;
-        border-top: 4px solid #00FF41 !important; 
         padding: 15px; 
-        border-radius: 10px; 
+        border-radius: 15px; 
         margin-bottom: 10px;
     }
+    
+    /* --- YELLOW REFLECTIVE DIODE RECIPE LISTS --- */
+    div[data-baseweb="select"] {
+        color: #FFFF00 !important;
+        text-shadow: 0px 0px 6px #FFFF00 !important;
+        font-weight: bold !important;
+    }
+
+    /* --- PERSISTENT REFLECTIVE GOLDEN TABS --- */
+    button[data-baseweb="tab"] {
+        font-size: 1.3rem !important;
+        font-weight: bold !important;
+        color: #FFD700 !important;
+        text-shadow: 0px 0px 8px #FFD700, 0px 0px 2px #FFFFFF !important;
+    }
+    
+    button[data-baseweb="tab"] > div > p { color: #FFD700 !important; }
+    
+    div[data-baseweb="tab-highlight"] { background-color: #00FF41 !important; }
     
     /* Buttons */
     div.stButton > button {
