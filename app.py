@@ -10,7 +10,6 @@ if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 def save_plan_data(data_dict):
-    """Saves the planning dictionary as a CSV."""
     rows = []
     for month, details in data_dict.items():
         for prod, target in details.get("targets", {}).items():
@@ -18,7 +17,6 @@ def save_plan_data(data_dict):
     pd.DataFrame(rows).to_csv(DATA_FILE, index=False)
 
 def load_plan_data():
-    """Loads the CSV and converts back to the app's internal structure."""
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
         plan = {}
@@ -27,7 +25,7 @@ def load_plan_data():
                 plan[row["Month"]] = {"days": row["Days"], "targets": {}}
             plan[row["Month"]]["targets"][row["Product"]] = row["Target"]
         return plan
-    return {}
+    return None
     # --- 1. DARK THEME CSS ---
 def apply_dark_theme():
     dark_css = """
@@ -393,28 +391,41 @@ with tab4:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
  # --- 4. INITIALIZE SESSION STATE ---
 if "annual_plan" not in st.session_state:
-    # Attempt to load from file, fallback to an empty dictionary
-    loaded_data = load_plan_data()
-    st.session_state.annual_plan = loaded_data if loaded_data else {
+    loaded = load_plan_data()
+    st.session_state.annual_plan = loaded if loaded else {
         "January": {"days": 25, "targets": {"8.25-16 HT-40 16PR": 0, "750-16 16PR HT-90": 0}}
     }
-
 if "inventory_data" not in st.session_state:
     st.session_state.inventory_data = INV_DF.copy()
 
-# --- 5. UI LAYOUT ---
+# --- 4. CALLBACK FUNCTIONS ---
+def update_jan_target():
+    st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"] = st.session_state["jan_target_input"]
+
+# --- 5. DATA LOGIC (Simplified for brevity) ---
+# [Keep your get_data() function here]
+@st.cache_data
+def get_data():
+    # ... (Your existing inventory, BOM, and recipe dictionaries) ...
+    return pd.DataFrame(), pd.DataFrame(), {}
+
+# --- 6. UI LAYOUT ---
 st.title("Horizon Production System")
 
-# Example of how to bind a widget so it doesn't vanish:
-# Use the 'key' parameter to link directly to your session state
+# Debugging Tip
+with st.sidebar:
+    st.subheader("System Debugger")
+    st.write("Current Session State:", st.session_state.annual_plan)
+
+# Widget bound to session state via key and callback
+st.number_input(
+    "Target for 8.25-16 HT-40 16PR",
+    value=st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"],
+    key="jan_target_input",
+    on_change=update_jan_target
+)
+
 if st.button("Save Data"):
     save_plan_data(st.session_state.annual_plan)
-    st.success("Data saved!")
-
-# Ensure your input fields use the key parameter to update session_state
-# Example:
-# st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"] = st.number_input(
-#     "Target for January", 
-#     value=st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"],
-#     key="jan_target_input"
-# )
+    st.success("Data persisted to CSV!")
+# --- Remaining app content ---
