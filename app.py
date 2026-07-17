@@ -1,34 +1,39 @@
 import streamlit as st
 import pandas as pd
 import os
-
 # --- 1. FILE STORAGE SETUP ---
 DATA_DIR = "data"
-DATA_FILE = os.path.join(DATA_DIR, "plan.csv")
+DATA_FILE = os.path.join(DATA_DIR, "production_log.csv")
 
-if not os.path.exists(DATA_DIR):
-    os.makedirs(DATA_DIR)
-
-def save_plan_data(data_dict):
-    """Saves the planning dictionary as a CSV."""
-    rows = []
-    for month, details in data_dict.items():
-        for prod, target in details.get("targets", {}).items():
-            rows.append({"Month": month, "Days": details["days"], "Product": prod, "Target": target})
-    pd.DataFrame(rows).to_csv(DATA_FILE, index=False)
-
-def load_plan_data():
-    """Loads the CSV and converts back to the app's internal structure."""
+def save_daily_plan(month, day, product, target):
+    """Saves or updates a daily target entry."""
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+        
+    # Load existing
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
-        plan = {}
-        for _, row in df.iterrows():
-            if row["Month"] not in plan:
-                plan[row["Month"]] = {"days": row["Days"], "targets": {}}
-            plan[row["Month"]]["targets"][row["Product"]] = row["Target"]
-        return plan
-    return {}
-    # --- 1. DARK THEME CSS ---
+    else:
+        df = pd.DataFrame(columns=["Month", "Day", "Product", "Target"])
+
+    # Update or add row
+    mask = (df["Month"] == month) & (df["Day"] == day) & (df["Product"] == product)
+    if mask.any():
+        df.loc[mask, "Target"] = target
+    else:
+        new_row = pd.DataFrame([{"Month": month, "Day": day, "Product": product, "Target": target}])
+        df = pd.concat([df, new_row], ignore_index=True)
+        
+    df.to_csv(DATA_FILE, index=False)
+
+def get_monthly_plan(month):
+    """Retrieves all data for a specific month to populate your dashboard."""
+    if os.path.exists(DATA_FILE):
+        df = pd.read_csv(DATA_FILE)
+        return df[df["Month"] == month]
+    return pd.DataFrame()
+    
+# --- 1. DARK THEME CSS ---
 def apply_dark_theme():
     dark_css = """
     <style>
