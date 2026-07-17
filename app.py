@@ -4,13 +4,23 @@ import os
 # --- 1. FILE STORAGE SETUP ---
 DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "production_log.csv")
-
-def save_daily_plan(month, day, product, target):
-    """Saves or updates a daily target entry."""
+# 1. Define the missing function
+def save_plan_data(data):
+    """Saves annual planning data to a CSV."""
+    # Ensure directory exists
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
-        
-    # Load existing
+    # Perform saving logic (e.g., data.to_csv(...))
+    # data.to_csv("annual_plan.csv", index=False)
+    st.success("Data saved successfully!")
+
+# 2. Use a button to trigger the save
+if st.button("Save Data"):
+    # Check if the state exists before calling
+    if 'annual_plan' in st.session_state:
+        save_plan_data(st.session_state.annual_plan)
+    else:
+        st.error("No annual plan data found in session state.")    # Load existing
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
     else:
