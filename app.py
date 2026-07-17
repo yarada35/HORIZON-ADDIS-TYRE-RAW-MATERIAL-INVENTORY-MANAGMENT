@@ -52,7 +52,7 @@ def apply_dark_theme():
     """
     st.markdown(dark_css, unsafe_html=True)
     st.markdown(dark_css, unsafe_html=True)    
-   .compound-card { 
+   .compound-card  { 
         background-color: #1A1A1A !important; 
         border: 1px solid #333333 !important;
         color: #FFFFFF !important;
