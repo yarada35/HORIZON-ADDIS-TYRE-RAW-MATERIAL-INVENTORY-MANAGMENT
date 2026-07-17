@@ -2,33 +2,38 @@ import streamlit as st
 import pandas as pd
 import os
 
-# --- 1. FILE STORAGE SETUP ---
-DATA_DIR = "data"
-DATA_FILE = os.path.join(DATA_DIR, "plan.csv")
+# Define the file path
+DATA_FILE = "data/plan.csv"
 
-if not os.path.exists(DATA_DIR):
-    os.makedirs(DATA_DIR)
+def save_data(df):
+    """Writes the current dataframe to the CSV."""
+    df.to_csv(DATA_FILE, index=False)
 
-def save_plan_data(data_dict):
-    """Saves the planning dictionary as a CSV."""
-    rows = []
-    for month, details in data_dict.items():
-        for prod, target in details.get("targets", {}).items():
-            rows.append({"Month": month, "Days": details["days"], "Product": prod, "Target": target})
-    pd.DataFrame(rows).to_csv(DATA_FILE, index=False)
-
-def load_plan_data():
-    """Loads the CSV and converts back to the app's internal structure."""
+def load_data():
+    """Loads the CSV, or creates an empty one if it doesn't exist."""
     if os.path.exists(DATA_FILE):
-        df = pd.read_csv(DATA_FILE)
-        plan = {}
-        for _, row in df.iterrows():
-            if row["Month"] not in plan:
-                plan[row["Month"]] = {"days": row["Days"], "targets": {}}
-            plan[row["Month"]]["targets"][row["Product"]] = row["Target"]
-        return plan
-    return {}
+        return pd.read_csv(DATA_FILE)
+    else:
+        # Define your initial empty structure here
+        return pd.DataFrame(columns=["Product", "Quantity", "Period"])
 
+# --- Your Main Logic ---
+# Load data at the start of every script execution
+df = load_data()
+
+# Display current data
+st.write("Current Production Plan:", df)
+
+# Example input fields to update the plan
+new_product = st.text_input("Product Name")
+new_qty = st.number_input("Quantity")
+
+if st.button("Save Entry"):
+    new_row = pd.DataFrame({"Product": [new_product], "Quantity": [new_qty], "Period": ["Q3"]})
+    df = pd.concat([df, new_row], ignore_index=True)
+    save_data(df) # Persist to file
+    st.success("Data saved successfully!")
+    st.rerun() # Refresh to show updated data
 # --- 1. DARK THEME CSS ---
 def apply_dark_theme():
     dark_css = """
