@@ -29,7 +29,7 @@ def load_plan_data():
         return plan
     return {}
     # --- 1. DARK THEME CSS ---
-def def apply_dark_theme():
+def apply_dark_theme():
     dark_css = """
     <style>
     /* Global background */
