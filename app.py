@@ -391,3 +391,7 @@ with tab4:
         st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
     else:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
+        # --- 5. INITIALIZE SESSION STATE ---
+# Change your initialization to this:
+if "annual_plan" not in st.session_state:
+    st.session_state["annual_plan"] = load_plan_data()
