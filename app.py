@@ -1,49 +1,34 @@
 import streamlit as st
 import pandas as pd
 import os
+
 # --- 1. FILE STORAGE SETUP ---
 DATA_DIR = "data"
-DATA_FILE = os.path.join(DATA_DIR, "production_log.csv")
-# 1. Define the missing function
-def save_plan_data(data):
-    """Saves annual planning data to a CSV."""
-    # Ensure directory exists
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-    # Perform saving logic (e.g., data.to_csv(...))
-    # data.to_csv("annual_plan.csv", index=False)
-    st.success("Data saved successfully!")
+DATA_FILE = os.path.join(DATA_DIR, "plan.csv")
 
-# 2. Use a button to trigger the save
-if st.button("Save Data"):
-    # Check if the state exists before calling
-    if 'annual_plan' in st.session_state:
-        save_plan_data(st.session_state.annual_plan)
-    else:
-        st.error("No annual plan data found in session state.")    # Load existing
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
+
+def save_plan_data(data_dict):
+    """Saves the planning dictionary as a CSV."""
+    rows = []
+    for month, details in data_dict.items():
+        for prod, target in details.get("targets", {}).items():
+            rows.append({"Month": month, "Days": details["days"], "Product": prod, "Target": target})
+    pd.DataFrame(rows).to_csv(DATA_FILE, index=False)
+
+def load_plan_data():
+    """Loads the CSV and converts back to the app's internal structure."""
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
-    else:
-        df = pd.DataFrame(columns=["Month", "Day", "Product", "Target"])
-
-    # Update or add row
-    mask = (df["Month"] == month) & (df["Day"] == day) & (df["Product"] == product)
-    if mask.any():
-        df.loc[mask, "Target"] = target
-    else:
-        new_row = pd.DataFrame([{"Month": month, "Day": day, "Product": product, "Target": target}])
-        df = pd.concat([df, new_row], ignore_index=True)
-        
-    df.to_csv(DATA_FILE, index=False)
-
-def get_monthly_plan(month):
-    """Retrieves all data for a specific month to populate your dashboard."""
-    if os.path.exists(DATA_FILE):
-        df = pd.read_csv(DATA_FILE)
-        return df[df["Month"] == month]
-    return pd.DataFrame()
-    
-# --- 1. DARK THEME CSS ---
+        plan = {}
+        for _, row in df.iterrows():
+            if row["Month"] not in plan:
+                plan[row["Month"]] = {"days": row["Days"], "targets": {}}
+            plan[row["Month"]]["targets"][row["Product"]] = row["Target"]
+        return plan
+    return {}
+    # --- 1. DARK THEME CSS ---
 def apply_dark_theme():
     dark_css = """
     <style>
