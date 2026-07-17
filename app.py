@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import os
@@ -413,53 +414,7 @@ with tab4:
         comparison_df = st.session_state["cumulative_requirements"].merge(INV_DF, left_index=True, right_index=True, how="left")
         st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
     else:
-        st.info("No planning data available yet. Please fill in the Monthly Planning tab.") 
-# --- ADD THIS TO YOUR TABS SECTION ---
-tab1, tab2, tab3 = st.tabs(["Production Planning", "Inventory & Alarm", "Material Analysis"])
-
-with tab3:
-    st.header("Material Consumption Analysis")
-    
-    # 1. User inputs actual received material from store
-    # For demonstration, we assume you might have a CSV upload or a simple input table
-    # Here we create a mock "Received" dataframe based on your inventory list
-    inventory_df = get_data()[0] # Assuming your inventory is in this structure
-    received_df = inventory_df.copy()
-    received_df["Received"] = received_df["Beginning"] * 0.95 # Mocking data
-    
-    # 2. Calculate Planned Consumption based on your BOM
-    bom_df = get_data()[1]
-    # Simplified calculation: Sum of (Target * BOM components)
-    # You can extend this logic with your specific monthly plan data
-    st.subheader("Plan vs Actual Consumption")
-    
-    # Logic to merge BOM data with targets would go here
-    analysis_df = pd.DataFrame({
-        "Material": inventory_df.index,
-        "Planned": inventory_df["Beginning"] * 0.8, # Mock plan
-        "Actual": received_df["Received"]
-    })
-    
-    analysis_df["Variation (Amt)"] = analysis_df["Planned"] - analysis_df["Actual"]
-    analysis_df["Variation (%)"] = (analysis_df["Variation (Amt)"] / analysis_df["Planned"]) * 100
-    
-    # 3. Display the Table
-    # --- ADD THIS BEFORE st.dataframe ---
-# 1. Verify column existence
-if "Variation (%)" in analysis_df.columns:
-    # 2. Ensure the column is numeric (this prevents Marshaller errors)
-    analysis_df["Variation (%)"] = pd.to_numeric(analysis_df["Variation (%)"], errors='coerce')
-    
-    # 3. Apply styling safely
-    st.dataframe(
-        analysis_df.style.format({"Variation (%)": "{:.2f}%"})
-                   .background_gradient(subset=["Variation (%)"], cmap="RdYlGn")
-    )
-else:
-    st.error(f"Column 'Variation (%)' not found. Available columns: {list(analysis_df.columns)}")
-    st.dataframe(analysis_df.style.format({
-        "Variation (%)": "{:.2f}%"
-    }).background_gradient(subset=["Variation (%)"], cmap="RdYlGn"), use_container_width=True)
+        st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
  # --- 4. INITIALIZE SESSION STATE ---
 if "annual_plan" not in st.session_state:
     # Attempt to load from file, fallback to an empty dictionary
