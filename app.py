@@ -414,7 +414,7 @@ with tab4:
         st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
     else:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.") 
-# ---TAB 5: Material Analysis ---
+# --- ADD THIS TO YOUR TABS SECTION ---
 tab1, tab2, tab3 = st.tabs(["Production Planning", "Inventory & Alarm", "Material Analysis"])
 
 with tab3:
