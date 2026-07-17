@@ -391,10 +391,16 @@ with tab4:
         st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
     else:
         st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
-        # --- 4. INITIALIZE SESSION STATE ---
+    # --- 4. INITIALIZE SESSION STATE ---
 if "annual_plan" not in st.session_state:
-    # This calls your loading function only once when the app first loads
-    st.session_state["annual_plan"] = load_plan_data()
+    st.session_state.annual_plan = {
+        "January": {"days": 25, "targets": {"8.25-16 HT-40 16PR": 0, "750-16 16PR HT-90": 0}},
+        # Add other months/defaults as needed
+    }
 
+if "inventory_data" not in st.session_state:
+    st.session_state.inventory_data = INV_DF.copy()
+
+# Add any other state variables required for your MRP calculation here
 # --- 5. UI/APP LOGIC ---
 # Now use st.session_state["annual_plan"] throughout your app
