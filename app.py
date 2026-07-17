@@ -77,6 +77,20 @@ def apply_dark_theme():
         color: #000000 !important;
         font-weight: bold;
     }
+   /* --- BRIGHT WHITE BOLD LABELS & INPUT TEXT --- */
+    label, p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+
+    /* Targeting specific selectbox labels and general UI text */
+    div[data-baseweb="select"] > div > div > span, 
+    div[class*="stSelectbox"] label, 
+    div[class*="stNumberInput"] label,
+    div[class*="stTextInput"] label {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    } 
     </style>
     """
     st.markdown(dark_css, unsafe_allow_html=True)
