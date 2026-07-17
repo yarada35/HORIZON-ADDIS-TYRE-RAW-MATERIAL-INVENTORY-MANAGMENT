@@ -400,7 +400,15 @@ if "inventory_data" not in st.session_state:
 
 # --- 4. CALLBACK FUNCTIONS ---
 def update_jan_target():
-    st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"] = st.session_state["jan_target_input"]
+jan_targets = st.session_state.annual_plan.get("January", {}).get("targets", {})
+default_val = jan_targets.get("8.25-16 HT-40 16PR", 0)
+
+st.number_input(
+    "Target for 8.25-16 HT-40 16PR (January)",
+    value=default_val,
+    key="jan_target_input",
+    on_change=update_jan_target
+)
 
 # --- 5. DATA LOGIC (Simplified for brevity) ---
 # [Keep your get_data() function here]
