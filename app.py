@@ -326,7 +326,8 @@ if "cumulative_requirements" not in st.session_state:
 
 # --- 4. UI LAYOUT ---
 st.title("🏭 HORIZON ADDIS TYRE: Integrated System")
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms", "📉 Planned vs Actual"])
+
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Production", "📅 Monthly Planning", "📦 Inventory & Alarms", "📉 Actual vs Planned"])
 
 # --- TAB 1: PRODUCTION ---
 with tab1:
@@ -338,23 +339,26 @@ with tab1:
     cols = st.columns(3)
     for i, comp_name in enumerate(compounds):
         with cols[i % 3]:
-           st.markdown('<div class="compound-card">', unsafe_allow_html=True)
-           st.write(f"#### {comp_name}")
-           batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
-           recipe = RECIPE_DATA.get(comp_name)
-           if recipe:
-               for ing, val in recipe.items():
-                   st.caption(f"{ing}: **{(val * batch):.2f} KG**")
-           st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<div class="compound-card">', unsafe_allow_html=True)
+            st.write(f"#### {comp_name}")
+            batch = st.number_input("Batch (KG)", 1.0, 1000.0, 100.0, key=f"input_{comp_name}")
+            recipe = RECIPE_DATA.get(comp_name)
+            if recipe:
+                for ing, val in recipe.items():
+                    st.caption(f"{ing}: **{(val * batch):.2f} KG**")
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # --- TAB 2: MONTHLY PLANNING ---
 with tab2:
     st.header("Monthly Material Requirements Plan")
-    month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+   
+    month_names = ["January", "February", "March", "April", "May", "June",
+                   "July", "August", "September", "October", "November", "December"]
+   
     col1, col2 = st.columns([1, 1])
     with col1:
         selected_month = st.selectbox("1. Select Planning Month", month_names)
-   
+       
     existing_days = st.session_state["annual_plan"].get(selected_month, {}).get("days", 22)
     existing_targets = st.session_state["annual_plan"].get(selected_month, {}).get("targets", {})
    
@@ -362,11 +366,17 @@ with tab2:
         working_days = st.number_input(f"2. Working Days in {selected_month}", min_value=0, max_value=31, value=existing_days)
 
     st.markdown("---")
-    plan_products = st.multiselect(f"3. Select Products to produce in {selected_month}", list(BOM_DATA.index), default=list(existing_targets.keys()))
+   
+    plan_products = st.multiselect(
+        f"3. Select Products to produce in {selected_month}",
+        list(BOM_DATA.index),
+        default=list(existing_targets.keys())
+    )
    
     if plan_products:
         st.subheader(f"4. Define Daily Production Targets (Units per Day) for {selected_month}")
         target_inputs = {}
+       
         cols = st.columns(3)
         for i, p in enumerate(plan_products):
             with cols[i % 3]:
@@ -374,64 +384,152 @@ with tab2:
                 target_inputs[p] = st.number_input(f"{p}", min_value=0, value=val, key=f"target_{selected_month}_{p}")
        
         if st.button(f"Save & Generate Requirements for {selected_month}", type="primary"):
-            st.session_state["annual_plan"][selected_month] = {"days": working_days, "targets": target_inputs}
+            st.session_state["annual_plan"][selected_month] = {
+                "days": working_days,
+                "targets": target_inputs
+            }
             st.success(f"Successfully updated targets for {selected_month}!")
-           
-            report_data = []
-            for m, plan_data in st.session_state["annual_plan"].items():
-                m_days = plan_data["days"]
-                for product, daily_target in plan_data["targets"].items():
-                    if daily_target > 0:
-                        total_units = daily_target * m_days
-                        bom_row = BOM_DATA.loc[product]
-                        for compound, compound_qty in bom_row.items():
-                            if compound_qty > 0 and compound in RECIPE_DATA:
-                                for ingredient, ratio in RECIPE_DATA[compound].items():
-                                    report_data.append({"Month": m, "Ingredient": ingredient, "Total Required (KG)": ratio * compound_qty * total_units})
-           
-            if report_data:
-                df_final = pd.DataFrame(report_data)
-                st.markdown("---")
-                df_month = df_final[df_final["Month"] == selected_month]
-                if not df_month.empty:
-                    month_summary = df_month.groupby("Ingredient")["Total Required (KG)"].sum().reset_index()
-                    st.write(f"###📌 {selected_month} Material Requirements (KG)")
-                    st.dataframe(month_summary.style.format({"Total Required (KG)": "{:,.2f}"}), use_container_width=True)
-               
-                st.write("### 📈 Annual Cumulative Material Requirements (KG)")
-                pivot_df = df_final.pivot_table(index="Ingredient", columns="Month", values="Total Required (KG)", aggfunc="sum", fill_value=0)
-                for m in month_names:
-                    if m not in pivot_df.columns:
-                        pivot_df[m] = 0
-                pivot_df = pivot_df[month_names]
-                pivot_df["Total Annual"] = pivot_df.sum(axis=1)
-                st.dataframe(pivot_df.style.format("{:,.2f}"), use_container_width=True)
-                st.session_state["cumulative_requirements"] = pivot_df
+            st.info("Navigate to the 'Actual vs Planned' tab to compare this plan against reality.")
 
 # --- TAB 3: INVENTORY & ALARMS ---
 with tab3:
-    st.header("Inventory Overview")
-    st.dataframe(INV_DF.style.format("{:,.2f}"), use_container_width=True)
+    st.header("Raw Material Inventory & Forecast Alarms")
+    daily_cons = st.number_input("Enter Average Daily Consumption (KG) for all items:", min_value=1.0, value=100.0)
+   
+    df_alarms = INV_DF.copy()
+    df_alarms["Daily Consumption"] = daily_cons
+   
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Req {days} Days"] = daily_cons * days
+   
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Alarm < {days}d"] = df_alarms["Ending"] < df_alarms[f"Req {days} Days"]
 
-# --- TAB 4: PLANNED VS ACTUAL ---
+    st.dataframe(df_alarms.style.map(
+        lambda x: 'background-color: #ff9999' if x is True else 'background-color: #99ff99',
+        subset=[col for col in df_alarms.columns if "Alarm" in col]
+    ), use_container_width=True)
+
+# --- TAB 4: ACTUAL VS PLANNED (NEW) ---
 with tab4:
-    st.header("Planned vs Actual")
-    if not st.session_state["cumulative_requirements"].empty:
-        st.write("Comparing planned requirements with current inventory:")
-        comparison_df = st.session_state["cumulative_requirements"].merge(INV_DF, left_index=True, right_index=True, how="left")
-        st.dataframe(comparison_df.style.format("{:,.2f}"), use_container_width=True)
+    st.header("📉 Actual vs. Planned Performance")
+    st.markdown("Compare your real production data against the targets saved in your Monthly Plan.")
+   
+    month_names = ["January", "February", "March", "April", "May", "June",
+                   "July", "August", "September", "October", "November", "December"]
+                   
+    selected_actual_month = st.selectbox("1. Select Month to Review", month_names, key="actual_month_select")
+   
+    if selected_actual_month not in st.session_state["annual_plan"]:
+        st.warning(f"No planned data found for {selected_actual_month}. Please create a plan in the 'Monthly Planning' tab first.")
     else:
-        st.info("No planning data available yet. Please fill in the Monthly Planning tab.")
- # --- 4. INITIALIZE SESSION STATE ---
-if "annual_plan" not in st.session_state:
-    # Attempt to load from file, fallback to an empty dictionary
-    loaded_data = load_plan_data()
-    st.session_state.annual_plan = loaded_data if loaded_data else {
-        "January": {"days": 25, "targets": {"8.25-16 HT-40 16PR": 0, "750-16 16PR HT-90": 0}}
-    }
+        st.markdown(f"### Record Actuals for {selected_actual_month}")
+        planned_data = st.session_state["annual_plan"][selected_actual_month]
+       
+        col1, col2 = st.columns(2)
+        with col1:
+            saved_actual_days = st.session_state["actual_plan"].get(selected_actual_month, {}).get("days", planned_data["days"])
+            actual_days = st.number_input(f"Actual Working Days in {selected_actual_month}", min_value=0, max_value=31, value=saved_actual_days, key=f"actual_days_{selected_actual_month}")
+            st.caption(f"Planned working days: {planned_data['days']}")
+           
+        with col2:
+            saved_actual_keys = list(st.session_state["actual_plan"].get(selected_actual_month, {}).get("targets", {}).keys())
+            default_keys = saved_actual_keys if saved_actual_keys else list(planned_data["targets"].keys())
+           
+            actual_products = st.multiselect(
+                "Products Actually Produced",
+                list(BOM_DATA.index),
+                default=default_keys,
+                key=f"actual_prod_{selected_actual_month}"
+            )
+           
+        if actual_products:
+            st.write("#### Enter Actual Daily Production (Units/Day)")
+            actual_targets = {}
+            cols = st.columns(3)
+           
+            for i, p in enumerate(actual_products):
+                with cols[i % 3]:
+                    planned_val = planned_data["targets"].get(p, 0)
+                    saved_val = st.session_state["actual_plan"].get(selected_actual_month, {}).get("targets", {}).get(p, planned_val)
+                    actual_targets[p] = st.number_input(f"{p}", min_value=0, value=saved_val, key=f"actual_target_{selected_actual_month}_{p}")
+                    st.caption(f"Planned target: {planned_val}")
 
-if "inventory_data" not in st.session_state:
-    st.session_state.inventory_data = INV_DF.copy()
+            if st.button(f"Calculate Deviations for {selected_actual_month}", type="primary"):
+                # Save Actuals to Memory
+                st.session_state["actual_plan"][selected_actual_month] = {
+                    "days": actual_days,
+                    "targets": actual_targets
+                }
+               
+                # --- MONTHLY DEVIATION CALCULATION ---
+                planned_rm_month = calc_rm_requirements(planned_data["targets"], planned_data["days"])
+                actual_rm_month = calc_rm_requirements(actual_targets, actual_days)
+               
+                # Combine into Report
+                all_ingredients = set(list(planned_rm_month.keys()) + list(actual_rm_month.keys()))
+                report_rows = []
+               
+                for ing in all_ingredients:
+                    p_daily = planned_rm_month.get(ing, {}).get("daily", 0.0)
+                    p_month = planned_rm_month.get(ing, {}).get("monthly", 0.0)
+                   
+                    a_daily = actual_rm_month.get(ing, {}).get("daily", 0.0)
+                    a_month = actual_rm_month.get(ing, {}).get("monthly", 0.0)
+                   
+                    report_rows.append({
+                        "Ingredient": ing,
+                        "Planned Daily (KG)": p_daily,
+                        "Actual Daily (KG)": a_daily,
+                        "Daily Deviation": a_daily - p_daily,
+                        "Planned Monthly (KG)": p_month,
+                        "Actual Monthly (KG)": a_month,
+                        "Monthly Deviation": a_month - p_month
+                    })
+               
+                df_month = pd.DataFrame(report_rows).set_index("Ingredient")
+               
+                st.markdown("---")
+                st.write(f"### 📊 {selected_actual_month} Raw Material Consumption Deviation")
+                st.info("Negative Deviation (Green) = Under Consumption / Savings. Positive Deviation (Red) = Over Consumption.")
+               
+                st.dataframe(df_month.style.format("{:,.2f}").map(color_deviation, subset=["Daily Deviation", "Monthly Deviation"]), use_container_width=True)
+               
+                # --- ANNUAL DEVIATION CALCULATION ---
+                st.write("### 📈 Annual Cumulative Deviation")
+                st.caption("This aggregates all months currently saved in your Planned and Actual memory banks.")
+               
+                annual_planned = {}
+                annual_actual = {}
+               
+                # Sum Planned
+                for m, p_data in st.session_state["annual_plan"].items():
+                    m_rm = calc_rm_requirements(p_data["targets"], p_data["days"])
+                    for ing, vals in m_rm.items():
+                        annual_planned[ing] = annual_planned.get(ing, 0) + vals["monthly"]
+                       
+                # Sum Actuals
+                for m, a_data in st.session_state["actual_plan"].items():
+                    a_rm = calc_rm_requirements(a_data["targets"], a_data["days"])
+                    for ing, vals in a_rm.items():
+                        annual_actual[ing] = annual_actual.get(ing, 0) + vals["monthly"]
+               
+                annual_rows = []
+                all_annual_ing = set(list(annual_planned.keys()) + list(annual_actual.keys()))
+               
+                for ing in all_annual_ing:
+                    p_annual = annual_planned.get(ing, 0.0)
+                    a_annual = annual_actual.get(ing, 0.0)
+                    annual_rows.append({
+                        "Ingredient": ing,
+                        "Annual Planned (KG)": p_annual,
+                        "Annual Actual (KG)": a_annual,
+                        "Annual Deviation": a_annual - p_annual
+                    })
+                   
+                df_annual = pd.DataFrame(annual_rows).set_index("Ingredient")
+                st.dataframe(df_annual.style.format("{:,.2f}").map(color_deviation, subset=["Annual Deviation"]), use_container_width=True)
+
 
 # --- 5. UI LAYOUT ---
 st.title("Horizon Production System")
