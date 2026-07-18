@@ -443,9 +443,22 @@ with tab2:
 
 # --- TAB 3: INVENTORY & ALARMS ---
 with tab3:
-    st.header("📦 Inventory Levels")
-    st.dataframe(INV_DF.style.format("{:,.2f}"), use_container_width=True)
+    st.header("Raw Material Inventory & Forecast Alarms")
+    daily_cons = st.number_input("Enter Average Daily Consumption (KG) for all items:", min_value=1.0, value=100.0)
+   
+    df_alarms = INV_DF.copy()
+    df_alarms["Daily Consumption"] = daily_cons
+   
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Req {days} Days"] = daily_cons * days
+   
+    for days in [15, 30, 60, 90, 120, 150]:
+        df_alarms[f"Alarm < {days}d"] = df_alarms["Ending"] < df_alarms[f"Req {days} Days"]
 
+    st.dataframe(df_alarms.style.map(
+        lambda x: 'background-color: #ff9999' if x is True else 'background-color: #99ff99',
+        subset=[col for col in df_alarms.columns if "Alarm" in col]
+    ), use_container_width=True)
 # --- TAB 4: PLANNED VS ACTUAL DEVIATION REPORT ---
 with tab4:
     st.header("⚖️ Deviation Balance Report (Planned vs. Actual)")
