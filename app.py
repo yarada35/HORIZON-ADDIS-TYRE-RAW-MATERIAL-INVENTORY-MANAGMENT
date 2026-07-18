@@ -529,5 +529,3 @@ with tab4:
                    
                 df_annual = pd.DataFrame(annual_rows).set_index("Ingredient")
                 st.dataframe(df_annual.style.format("{:,.2f}").map(color_deviation, subset=["Annual Deviation"]), use_container_width=True)
-
-
