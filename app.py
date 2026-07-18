@@ -531,19 +531,3 @@ with tab4:
                 st.dataframe(df_annual.style.format("{:,.2f}").map(color_deviation, subset=["Annual Deviation"]), use_container_width=True)
 
 
-# --- 5. UI LAYOUT ---
-st.title("Horizon Production System")
-
-# Example of how to bind a widget so it doesn't vanish:
-# Use the 'key' parameter to link directly to your session state
-if st.button("Save Data"):
-    save_plan_data(st.session_state.annual_plan)
-    st.success("Data saved!")
-
-# Ensure your input fields use the key parameter to update session_state
-# Example:
-# st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"] = st.number_input(
-#     "Target for January",
-#     value=st.session_state.annual_plan["January"]["targets"]["8.25-16 HT-40 16PR"],
-#     key="jan_target_input"
-# )
